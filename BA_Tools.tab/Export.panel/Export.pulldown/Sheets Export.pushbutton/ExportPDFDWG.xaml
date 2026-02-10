@@ -223,7 +223,16 @@
                             </Grid>
 
                             <TextBlock Text="File Naming:" Style="{StaticResource LabelText}"/>
-                            <ComboBox x:Name="cmbPDFNaming" Style="{StaticResource DarkComboBox}" Margin="0,0,0,12"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox x:Name="cmbPDFNaming" Grid.Column="0" Style="{StaticResource DarkComboBox}"/>
+                                <Button x:Name="btnEditPDFFormats" Grid.Column="2" Content="Edit Formats" Width="100" Height="30" 
+                                        Style="{StaticResource SecondaryButton}"/>
+                            </Grid>
 
                             <CheckBox x:Name="chkPDFCombine" Content="Combine all sheets into single PDF" 
                                       Foreground="#E0E0E8" FontSize="11"/>
@@ -250,7 +259,16 @@
                             </Grid>
 
                             <TextBlock Text="File Naming:" Style="{StaticResource LabelText}"/>
-                            <ComboBox x:Name="cmbDWGNaming" Style="{StaticResource DarkComboBox}" Margin="0,0,0,12"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox x:Name="cmbDWGNaming" Grid.Column="0" Style="{StaticResource DarkComboBox}"/>
+                                <Button x:Name="btnEditDWGFormats" Grid.Column="2" Content="Edit Formats" Width="100" Height="30" 
+                                        Style="{StaticResource SecondaryButton}"/>
+                            </Grid>
 
                             <Grid Margin="0,0,0,12">
                                 <Grid.ColumnDefinitions>

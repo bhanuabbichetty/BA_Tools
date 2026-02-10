@@ -8,6 +8,10 @@ __doc__ = 'Export sheets to PDF and DWG with custom naming and settings'
 
 import clr
 import os
+import re
+import datetime
+import locale
+
 clr.AddReference("RevitAPI")
 clr.AddReference("PresentationCore")
 clr.AddReference("PresentationFramework")
@@ -15,7 +19,8 @@ clr.AddReference("WindowsBase")
 clr.AddReference("System.Xaml")
 
 from Autodesk.Revit.DB import *
-from pyrevit import revit, script, forms
+from pyrevit import revit, script, forms, coreutils, HOST_APP
+from pyrevit.framework import Windows, ObjectModel, Forms
 import System
 from System.Windows.Markup import XamlReader
 from System.Windows import Window, Visibility
@@ -23,9 +28,288 @@ from System.IO import StreamReader
 from System.Collections.ObjectModel import ObservableCollection
 from System.Collections.Generic import List
 from System.Windows.Forms import FolderBrowserDialog, DialogResult
+from collections import namedtuple
 
 doc = revit.doc
 output = script.get_output()
+config = script.get_config()
+
+# Naming format helper classes
+NamingFormatter = namedtuple('NamingFormatter', ['template', 'desc'])
+
+
+# ==============================================================================
+# NAMING FORMAT CLASSES
+# ==============================================================================
+
+class NamingFormat(forms.Reactive):
+    """File Naming Format"""
+    def __init__(self, name, template, builtin=False):
+        self._name = name
+        self._template = self.verify_template(template)
+        self.builtin = builtin
+
+    @staticmethod
+    def verify_template(value):
+        """Verify template is valid"""
+        if not value.lower().endswith('.pdf'):
+            value += '.pdf'
+        return value
+
+    @forms.reactive
+    def name(self):
+        """Format name"""
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    @forms.reactive
+    def template(self):
+        """Format template string"""
+        return self._template
+
+    @template.setter
+    def template(self, value):
+        self._template = self.verify_template(value)
+
+
+class EditNamingFormatsWindow(forms.WPFWindow):
+    """Edit Naming Formats Dialog"""
+    def __init__(self, xaml_file_name, start_with=None):
+        forms.WPFWindow.__init__(self, xaml_file_name)
+        
+        self._drop_pos = 0
+        self._starting_item = start_with
+        self._saved = False
+        
+        self.reset_naming_formats()
+        self.reset_formatters()
+    
+    @staticmethod
+    def get_default_formatters():
+        return [
+            NamingFormatter(
+                template='{index}',
+                desc='Print Index Number e.g. "0001"'
+            ),
+            NamingFormatter(
+                template='{number}',
+                desc='Sheet Number e.g. "A1.00"'
+            ),
+            NamingFormatter(
+                template='{name}',
+                desc='Sheet Name e.g. "1ST FLOOR PLAN"'
+            ),
+            NamingFormatter(
+                template='{name_dash}',
+                desc='Sheet Name (with - for space) e.g. "1ST-FLOOR-PLAN"'
+            ),
+            NamingFormatter(
+                template='{name_underline}',
+                desc='Sheet Name (with _ for space) e.g. "1ST_FLOOR_PLAN"'
+            ),
+            NamingFormatter(
+                template='{current_date}',
+                desc='Today\'s Date e.g. "2019-10-12"'
+            ),
+            NamingFormatter(
+                template='{issue_date}',
+                desc='Sheet Issue Date e.g. "2019-10-12"'
+            ),
+            NamingFormatter(
+                template='{rev_number}',
+                desc='Revision Number e.g. "01"'
+            ),
+            NamingFormatter(
+                template='{rev_desc}',
+                desc='Revision Description e.g. "ASI01"'
+            ),
+            NamingFormatter(
+                template='{rev_date}',
+                desc='Revision Date e.g. "2019-10-12"'
+            ),
+            NamingFormatter(
+                template='{proj_name}',
+                desc='Project Name e.g. "MY_PROJECT"'
+            ),
+            NamingFormatter(
+                template='{proj_number}',
+                desc='Project Number e.g. "PR2019.12"'
+            ),
+            NamingFormatter(
+                template='{proj_building_name}',
+                desc='Project Building Name e.g. "BLDG01"'
+            ),
+            NamingFormatter(
+                template='{proj_issue_date}',
+                desc='Project Issue Date e.g. "2019-10-12"'
+            ),
+            NamingFormatter(
+                template='{proj_org_name}',
+                desc='Project Organization Name e.g. "MYCOMP"'
+            ),
+            NamingFormatter(
+                template='{proj_status}',
+                desc='Project Status e.g. "CD100"'
+            ),
+            NamingFormatter(
+                template='{username}',
+                desc='Active User e.g. "eirannejad"'
+            ),
+            NamingFormatter(
+                template='{revit_version}',
+                desc='Active Revit Version e.g. "2019"'
+            ),
+            NamingFormatter(
+                template='{sheet_param:PARAM_NAME}',
+                desc='Value of Given Sheet Parameter e.g. '
+                     'Replace PARAM_NAME with target parameter name'
+            ),
+            NamingFormatter(
+                template='{tblock_param:PARAM_NAME}',
+                desc='Value of Given TitleBlock Parameter e.g. '
+                     'Replace PARAM_NAME with target parameter name'
+            ),
+            NamingFormatter(
+                template='{proj_param:PARAM_NAME}',
+                desc='Value of Given Project Information Parameter e.g. '
+                     'Replace PARAM_NAME with target parameter name'
+            ),
+            NamingFormatter(
+                template='{glob_param:PARAM_NAME}',
+                desc='Value of Given Global Parameter. '
+                     'Replace PARAM_NAME with target parameter name'
+            ),
+        ]
+    
+    @staticmethod
+    def get_default_naming_formats():
+        return [
+            NamingFormat(
+                name='0001 A1.00 1ST FLOOR PLAN.pdf',
+                template='{index} {number} {name}.pdf',
+                builtin=True
+            ),
+            NamingFormat(
+                name='0001_A1.00_1ST FLOOR PLAN.pdf',
+                template='{index}_{number}_{name}.pdf',
+                builtin=True
+            ),
+            NamingFormat(
+                name='0001-A1.00-1ST FLOOR PLAN.pdf',
+                template='{index}-{number}-{name}.pdf',
+                builtin=True
+            ),
+        ]
+    
+    @staticmethod
+    def get_naming_formats():
+        naming_formats = EditNamingFormatsWindow.get_default_naming_formats()
+        naming_formats_dict = config.get_option('namingformats', {})
+        for name, template in naming_formats_dict.items():
+            naming_formats.append(NamingFormat(name=name, template=template))
+        return naming_formats
+    
+    @staticmethod
+    def set_naming_formats(naming_formats):
+        naming_formats_dict = {
+            x.name:x.template for x in naming_formats if not x.builtin
+        }
+        config.namingformats = naming_formats_dict
+        script.save_config()
+    
+    @property
+    def naming_formats(self):
+        return self.formats_lb.ItemsSource
+    
+    @property
+    def selected_naming_format(self):
+        return self.formats_lb.SelectedItem
+    
+    @selected_naming_format.setter
+    def selected_naming_format(self, value):
+        self.formats_lb.SelectedItem = value
+        self.namingformat_edit.DataContext = value
+    
+    def reset_formatters(self):
+        self.formatters_wp.ItemsSource = \
+            EditNamingFormatsWindow.get_default_formatters()
+    
+    def reset_naming_formats(self):
+        self.formats_lb.ItemsSource = \
+                ObjectModel.ObservableCollection[object](
+                    EditNamingFormatsWindow.get_naming_formats()
+                )
+        if isinstance(self._starting_item, NamingFormat):
+            for item in self.formats_lb.ItemsSource:
+                if item.name == self._starting_item.name:
+                    self.selected_naming_format = item
+                    break
+    
+    def start_drag(self, sender, args):
+        name_formatter = args.OriginalSource.DataContext
+        Windows.DragDrop.DoDragDrop(
+            self.formatters_wp,
+            Windows.DataObject("name_formatter", name_formatter),
+            Windows.DragDropEffects.Copy
+            )
+    
+    def preview_drag(self, sender, args):
+        mouse_pos = Forms.Cursor.Position
+        mouse_po_pt = Windows.Point(mouse_pos.X, mouse_pos.Y)
+        self._drop_pos = \
+            self.template_tb.GetCharacterIndexFromPoint(
+                point=self.template_tb.PointFromScreen(mouse_po_pt),
+                snapToText=True
+                )
+        self.template_tb.SelectionStart = self._drop_pos
+        self.template_tb.SelectionLength = 0
+        self.template_tb.Focus()
+        args.Effects = Windows.DragDropEffects.Copy
+        args.Handled = True
+    
+    def stop_drag(self, sender, args):
+        name_formatter = args.Data.GetData("name_formatter")
+        if name_formatter:
+            new_template = \
+                str(self.template_tb.Text)[:self._drop_pos] \
+                + name_formatter.template \
+                + str(self.template_tb.Text)[self._drop_pos:]
+            self.template_tb.Text = new_template
+            self.template_tb.Focus()
+    
+    def namingformat_changed(self, sender, args):
+        naming_format = self.selected_naming_format
+        self.namingformat_edit.DataContext = naming_format
+    
+    def duplicate_namingformat(self, sender, args):
+        naming_format = self.selected_naming_format
+        new_naming_format = NamingFormat(
+            name='<unnamed>',
+            template=naming_format.template
+            )
+        self.naming_formats.Add(new_naming_format)
+        self.selected_naming_format = new_naming_format
+    
+    def delete_namingformat(self, sender, args):
+        naming_format = self.selected_naming_format
+        if naming_format.builtin:
+            return
+        item_index = self.naming_formats.IndexOf(naming_format)
+        self.naming_formats.Remove(naming_format)
+        next_index = min([item_index, self.naming_formats.Count-1])
+        self.selected_naming_format = self.naming_formats[next_index]
+    
+    def save_formats(self, sender, args):
+        EditNamingFormatsWindow.set_naming_formats(self.naming_formats)
+        self._saved = True
+        self.Close()
+    
+    def cancelled(self, sender, args):
+        if not self._saved:
+            self.reset_naming_formats()
 
 
 # ==============================================================================
@@ -147,6 +431,11 @@ class ExportPDFDWGWindow(Window):
         self.pdf_path = "C:\\Projects\\BIM\\Exports\\PDF"
         self.dwg_path = "C:\\Projects\\BIM\\Exports\\DWG"
         
+        # Naming formats
+        self.naming_formats = EditNamingFormatsWindow.get_naming_formats()
+        self.selected_pdf_naming_format = self.naming_formats[0] if self.naming_formats else None
+        self.selected_dwg_naming_format = self.naming_formats[0] if self.naming_formats else None
+        
         # Get controls
         self.btnClose = self._window.FindName("btnClose")
         self.cmbViewSet = self._window.FindName("cmbViewSet")
@@ -164,12 +453,14 @@ class ExportPDFDWGWindow(Window):
         self.txtPDFPath = self._window.FindName("txtPDFPath")
         self.btnBrowsePDF = self._window.FindName("btnBrowsePDF")
         self.cmbPDFNaming = self._window.FindName("cmbPDFNaming")
+        self.btnEditPDFFormats = self._window.FindName("btnEditPDFFormats")
         self.chkPDFCombine = self._window.FindName("chkPDFCombine")
         
         # DWG settings
         self.txtDWGPath = self._window.FindName("txtDWGPath")
         self.btnBrowseDWG = self._window.FindName("btnBrowseDWG")
         self.cmbDWGNaming = self._window.FindName("cmbDWGNaming")
+        self.btnEditDWGFormats = self._window.FindName("btnEditDWGFormats")
         self.cmbDWGSetup = self._window.FindName("cmbDWGSetup")
         self.cmbDWGVersion = self._window.FindName("cmbDWGVersion")
         
@@ -190,20 +481,8 @@ class ExportPDFDWGWindow(Window):
             self.cmbViewSet.Items.Add(viewset.Name)
         self.cmbViewSet.SelectedIndex = 0
         
-        # File naming options
-        naming_options = [
-            "Sheet Number Only",
-            "Sheet Number - Sheet Name",
-            "Sheet Name - Sheet Number",
-            "Sheet Number_Sheet Name",
-            "Sheet Number-Sheet Name_Revision",
-            "Project Number-Sheet Number_Revision"
-        ]
-        for option in naming_options:
-            self.cmbPDFNaming.Items.Add(option)
-            self.cmbDWGNaming.Items.Add(option)
-        self.cmbPDFNaming.SelectedIndex = 1  # Default: Number - Name
-        self.cmbDWGNaming.SelectedIndex = 1
+        # Naming formats
+        self.LoadNamingFormats()
         
         # DWG export setups
         if self.dwg_setups:
@@ -239,6 +518,19 @@ class ExportPDFDWGWindow(Window):
         self.lstSheets.ItemsSource = self.filtered_sheet_items
         self.UpdateSheetCount()
     
+    def LoadNamingFormats(self):
+        """Load naming formats into combo boxes"""
+        self.cmbPDFNaming.Items.Clear()
+        self.cmbDWGNaming.Items.Clear()
+        
+        for fmt in self.naming_formats:
+            self.cmbPDFNaming.Items.Add(fmt.name)
+            self.cmbDWGNaming.Items.Add(fmt.name)
+        
+        if self.naming_formats:
+            self.cmbPDFNaming.SelectedIndex = 0
+            self.cmbDWGNaming.SelectedIndex = 0
+    
     def SetupEventHandlers(self):
         """Setup event handlers"""
         self.btnClose.Click += self.OnClose
@@ -248,84 +540,135 @@ class ExportPDFDWGWindow(Window):
         self.btnClearAll.Click += self.OnClearAll
         self.btnBrowsePDF.Click += self.OnBrowsePDF
         self.btnBrowseDWG.Click += self.OnBrowseDWG
-        self.cmbPDFNaming.SelectionChanged += self.UpdateNamingPreview
-        self.cmbDWGNaming.SelectionChanged += self.UpdateNamingPreview
+        self.cmbPDFNaming.SelectionChanged += self.OnNamingChanged
+        self.cmbDWGNaming.SelectionChanged += self.OnNamingChanged
+        self.btnEditPDFFormats.Click += self.OnEditPDFFormats
+        self.btnEditDWGFormats.Click += self.OnEditDWGFormats
         self.btnExport.Click += self.OnExport
     
-    def OnClose(self, sender, args):
-        """Close window"""
-        self._window.DialogResult = False
-        self._window.Close()
+    def OnEditPDFFormats(self, sender, args):
+        """Open Edit Formats dialog for PDF"""
+        script_dir = os.path.dirname(__file__)
+        xaml_path = os.path.join(script_dir, "EditNamingFormats.xaml")
+        
+        if os.path.exists(xaml_path):
+            editfmt_wnd = EditNamingFormatsWindow(
+                xaml_path,
+                start_with=self.selected_pdf_naming_format
+            )
+            editfmt_wnd.ShowDialog()
+            # Reload formats
+            self.naming_formats = list(editfmt_wnd.naming_formats)
+            self.LoadNamingFormats()
+            # Try to select the previously selected format
+            if editfmt_wnd.selected_naming_format:
+                for i, fmt in enumerate(self.naming_formats):
+                    if fmt.name == editfmt_wnd.selected_naming_format.name:
+                        self.cmbPDFNaming.SelectedIndex = i
+                        break
+        else:
+            forms.alert("EditNamingFormats.xaml not found in script directory")
+    
+    def OnEditDWGFormats(self, sender, args):
+        """Open Edit Formats dialog for DWG"""
+        script_dir = os.path.dirname(__file__)
+        xaml_path = os.path.join(script_dir, "EditNamingFormats.xaml")
+        
+        if os.path.exists(xaml_path):
+            editfmt_wnd = EditNamingFormatsWindow(
+                xaml_path,
+                start_with=self.selected_dwg_naming_format
+            )
+            editfmt_wnd.ShowDialog()
+            # Reload formats
+            self.naming_formats = list(editfmt_wnd.naming_formats)
+            self.LoadNamingFormats()
+            # Try to select the previously selected format
+            if editfmt_wnd.selected_naming_format:
+                for i, fmt in enumerate(self.naming_formats):
+                    if fmt.name == editfmt_wnd.selected_naming_format.name:
+                        self.cmbDWGNaming.SelectedIndex = i
+                        break
+        else:
+            forms.alert("EditNamingFormats.xaml not found in script directory")
     
     def OnViewSetChanged(self, sender, args):
-        """Filter sheets by view set"""
-        if self.cmbViewSet.SelectedIndex == 0:
-            # All sheets
-            self.FilterSheets()
-        else:
-            # Specific view set
-            viewset_name = self.cmbViewSet.SelectedItem.ToString()
-            viewset = next((v for v in self.viewsets if v.Name == viewset_name), None)
-            
-            if viewset:
-                viewset_sheet_ids = set([vs.Id for vs in viewset.Views])
-                self.FilterSheets(viewset_sheet_ids)
+        """Handle view set change"""
+        self.FilterSheets()
     
-    def FilterSheets(self, viewset_sheet_ids=None):
-        """Filter sheets by view set and search text"""
-        filter_text = self.txtSheetFilter.Text.lower() if self.txtSheetFilter.Text else ""
-        
+    def OnFilterChanged(self, sender, args):
+        """Handle filter text change"""
+        self.FilterSheets()
+    
+    def FilterSheets(self):
+        """Filter sheets based on view set and search text"""
         self.filtered_sheet_items.Clear()
         
-        for sheet_item in self.sheet_items:
-            # Check view set filter
-            if viewset_sheet_ids is not None and sheet_item.Sheet.Id not in viewset_sheet_ids:
-                continue
+        # Get view set filter
+        selected_viewset = None
+        viewset_sheet_ids = None
+        
+        if self.cmbViewSet.SelectedItem and self.cmbViewSet.SelectedItem.ToString() != "(All Sheets)":
+            viewset_name = self.cmbViewSet.SelectedItem.ToString()
+            for vs in self.viewsets:
+                if vs.Name == viewset_name:
+                    selected_viewset = vs
+                    # Convert ViewSet.Views to a set of ElementIds (integer values)
+                    viewset_sheet_ids = set()
+                    for v in selected_viewset.Views:
+                        # Handle both ElementId and View objects
+                        if isinstance(v, ElementId):
+                            viewset_sheet_ids.add(v.IntegerValue)
+                        else:
+                            # It's a View object, get its Id
+                            viewset_sheet_ids.add(v.Id.IntegerValue)
+                    break
+        
+        # Get search filter
+        search_text = self.txtSheetFilter.Text.lower() if self.txtSheetFilter.Text else ""
+        
+        # Apply filters
+        for item in self.sheet_items:
+            # View set filter
+            if viewset_sheet_ids is not None:
+                if item.Sheet.Id.IntegerValue not in viewset_sheet_ids:
+                    continue
             
-            # Check text filter
-            if filter_text and filter_text not in sheet_item.DisplayText.lower():
-                continue
+            # Search filter
+            if search_text:
+                if search_text not in item.SheetNumber.lower() and \
+                   search_text not in item.SheetName.lower():
+                    continue
             
-            self.filtered_sheet_items.Add(sheet_item)
+            self.filtered_sheet_items.Add(item)
         
         self.UpdateSheetCount()
     
-    def OnFilterChanged(self, sender, args):
-        """When filter text changes"""
-        self.OnViewSetChanged(None, None)  # Re-apply all filters
+    def UpdateSheetCount(self):
+        """Update sheet count display"""
+        selected = sum(1 for item in self.filtered_sheet_items if item.IsSelected)
+        total = len(self.filtered_sheet_items)
+        self.txtSheetCount.Text = "{} / {} sheets selected".format(selected, total)
+    
+    def OnSheetSelectionChanged(self, sender, args):
+        """Handle sheet selection change"""
+        self.UpdateSheetCount()
+        self.UpdateNamingPreview()
     
     def OnSelectAll(self, sender, args):
-        """Select all visible sheets"""
+        """Select all sheets"""
         for item in self.filtered_sheet_items:
             item.IsSelected = True
         self.UpdateSheetCount()
-        self.UpdateNamingPreview(None, None)
     
     def OnClearAll(self, sender, args):
         """Clear all selections"""
-        for item in self.sheet_items:
+        for item in self.filtered_sheet_items:
             item.IsSelected = False
         self.UpdateSheetCount()
-        self.UpdateNamingPreview(None, None)
-    
-    def OnSheetSelectionChanged(self, sender, args):
-        """When sheet selection changes"""
-        self.UpdateSheetCount()
-        self.UpdateNamingPreview(None, None)
-    
-    def UpdateSheetCount(self):
-        """Update sheet count label"""
-        selected_count = sum(1 for item in self.sheet_items if item.IsSelected)
-        total_count = len(self.filtered_sheet_items)
-        self.txtSheetCount.Text = "{} / {} selected".format(selected_count, total_count)
-        
-        if selected_count > 0:
-            self.txtStatus.Text = "Ready to export {} sheet(s)".format(selected_count)
-        else:
-            self.txtStatus.Text = "Select sheets to export"
     
     def OnBrowsePDF(self, sender, args):
-        """Browse for PDF output folder"""
+        """Browse for PDF folder"""
         dialog = FolderBrowserDialog()
         dialog.Description = "Select PDF Export Folder"
         dialog.SelectedPath = self.pdf_path
@@ -335,7 +678,7 @@ class ExportPDFDWGWindow(Window):
             self.txtPDFPath.Text = self.pdf_path
     
     def OnBrowseDWG(self, sender, args):
-        """Browse for DWG output folder"""
+        """Browse for DWG folder"""
         dialog = FolderBrowserDialog()
         dialog.Description = "Select DWG Export Folder"
         dialog.SelectedPath = self.dwg_path
@@ -344,191 +687,307 @@ class ExportPDFDWGWindow(Window):
             self.dwg_path = dialog.SelectedPath
             self.txtDWGPath.Text = self.dwg_path
     
-    def GetFileName(self, sheet, naming_format):
-        """Generate filename based on naming format"""
-        sheet_num = sheet.SheetNumber
-        sheet_name = sheet.Name
-
-        # Remove invalid filename characters
-        invalid_chars = '<>:"/\\|?*'
-        for char in invalid_chars:
-            sheet_num = sheet_num.replace(char, '_')
-            sheet_name = sheet_name.replace(char, '_')
-
-        # Only get project number if needed for this format
-        project_num = ""
-        if "Project Number" in naming_format:
-            try:
-                project_info = FilteredElementCollector(self.doc)\
-                    .OfCategory(BuiltInCategory.OST_ProjectInformation)\
-                    .FirstElement()
-                if project_info:
-                    project_num_param = project_info.LookupParameter("Project Number")
-                    if project_num_param and project_num_param.HasValue:
-                        project_num = project_num_param.AsString()
-                        # Remove invalid chars from project number
-                        for char in invalid_chars:
-                            project_num = project_num.replace(char, '_')
-            except:
-                pass
-
-        # Only get revision if needed for this format
-        revision = ""
-        if "Revision" in naming_format:
-            try:
-                # Try to get the current revision from the sheet
-                current_revision_param = sheet.LookupParameter("Current Revision")
-                if current_revision_param and current_revision_param.HasValue:
-                    revision_value = current_revision_param.AsString()
-                    if revision_value:
-                        # Extract only the last digit from revision (e.g., "00" -> "0", "01" -> "1", "03" -> "3")
-                        import re
-                        digits = re.findall(r'\d', revision_value)
-                        if digits:
-                            revision = "_R{}".format(digits[-1])
-
-                # Alternative: try "Revision Number" parameter
-                if not revision:
-                    revision_param = sheet.LookupParameter("Revision Number")
-                    if revision_param and revision_param.HasValue:
-                        revision_value = revision_param.AsString()
-                        if revision_value:
-                            import re
-                            digits = re.findall(r'\d', revision_value)
-                            if digits:
-                                revision = "_R{}".format(digits[-1])
-            except:
-                pass  # If revision lookup fails, continue without it
-
-        # Generate filename based on format
-        if naming_format == "Sheet Number Only":
-            return sheet_num
-        elif naming_format == "Sheet Number - Sheet Name":
-            return "{} - {}".format(sheet_num, sheet_name)
-        elif naming_format == "Sheet Name - Sheet Number":
-            return "{} - {}".format(sheet_name, sheet_num)
-        elif naming_format == "Sheet Number_Sheet Name":
-            return "{}_{}".format(sheet_num, sheet_name)
-        elif naming_format == "Sheet Number-Sheet Name_Revision":
-            return "{}-{}{}".format(sheet_num, sheet_name, revision)
-        elif naming_format == "Project Number-Sheet Number_Revision":
-            if project_num:
-                return "{}-{}{}".format(project_num, sheet_num, revision)
-            else:
-                return "{}{}".format(sheet_num, revision)
-        else:
-            return sheet_num
-    
-    def UpdateNamingPreview(self, sender, args):
-        """Update file naming preview"""
-        selected_items = [item for item in self.sheet_items if item.IsSelected]
+    def OnNamingChanged(self, sender, args):
+        """Handle naming format change"""
+        # Update selected formats
+        if self.cmbPDFNaming.SelectedIndex >= 0:
+            self.selected_pdf_naming_format = self.naming_formats[self.cmbPDFNaming.SelectedIndex]
+        if self.cmbDWGNaming.SelectedIndex >= 0:
+            self.selected_dwg_naming_format = self.naming_formats[self.cmbDWGNaming.SelectedIndex]
         
-        if not selected_items:
-            self.txtNamingPreview.Text = "Select sheets to see naming preview..."
+        self.UpdateNamingPreview()
+    
+    def UpdateNamingPreview(self):
+        """Update naming preview"""
+        # Find first selected sheet
+        first_sheet = None
+        for item in self.filtered_sheet_items:
+            if item.IsSelected:
+                first_sheet = item.Sheet
+                break
+        
+        if not first_sheet:
+            self.txtNamingPreview.Text = "Select a sheet to preview naming..."
             return
         
-        pdf_naming = self.cmbPDFNaming.SelectedItem.ToString() if self.cmbPDFNaming.SelectedItem else ""
-        dwg_naming = self.cmbDWGNaming.SelectedItem.ToString() if self.cmbDWGNaming.SelectedItem else ""
+        # Generate preview using naming format templates
+        pdf_name = self.GenerateFileName(first_sheet, self.selected_pdf_naming_format, 1) if self.selected_pdf_naming_format else ""
+        dwg_name = self.GenerateFileName(first_sheet, self.selected_dwg_naming_format, 1) if self.selected_dwg_naming_format else ""
         
-        preview = "NAMING PREVIEW (first 3 sheets):\n\n"
+        # Replace .pdf with .dwg for DWG preview
+        if dwg_name.lower().endswith('.pdf'):
+            dwg_name = dwg_name[:-4] + '.dwg'
         
-        for i, item in enumerate(selected_items[:3], 1):
-            preview += "Sheet: {}\n".format(item.DisplayText)
-            
-            if self.chkExportPDF.IsChecked:
-                pdf_name = self.GetFileName(item.Sheet, pdf_naming)
-                preview += "  PDF: {}.pdf\n".format(pdf_name)
-            
-            if self.chkExportDWG.IsChecked:
-                dwg_name = self.GetFileName(item.Sheet, dwg_naming)
-                preview += "  DWG: {}.dwg\n".format(dwg_name)
-            
-            preview += "\n"
-        
-        if len(selected_items) > 3:
-            preview += "... and {} more sheet(s)".format(len(selected_items) - 3)
-        
+        preview = "PDF: {}\nDWG: {}".format(pdf_name, dwg_name)
         self.txtNamingPreview.Text = preview
     
+    def GenerateFileName(self, sheet, naming_format, index=1):
+        """Generate filename from template with enhanced parameter support"""
+        if not naming_format:
+            return sheet.SheetNumber + ".pdf"
+        
+        template = naming_format.template
+        
+        # Replace index first
+        template = template.replace('{index}', str(index).zfill(4))
+        
+        # Basic sheet info
+        template = template.replace('{number}', sheet.SheetNumber)
+        template = template.replace('{name}', sheet.Name)
+        template = template.replace('{name_dash}', sheet.Name.replace(' ', '-'))
+        template = template.replace('{name_underline}', sheet.Name.replace(' ', '_'))
+        
+        # Current date
+        template = template.replace('{current_date}', coreutils.current_date())
+        
+        # Sheet parameters - using regex to find custom parameters
+        sheet_param_pattern = r'\{sheet_param:([^}]+)\}'
+        for param_name in re.findall(sheet_param_pattern, template):
+            try:
+                param = sheet.LookupParameter(param_name)
+                if param:
+                    param_value = revit.query.get_param_value(param)
+                    if param_value:
+                        template = template.replace('{sheet_param:' + param_name + '}', str(param_value))
+                    else:
+                        template = template.replace('{sheet_param:' + param_name + '}', '')
+                else:
+                    template = template.replace('{sheet_param:' + param_name + '}', '')
+            except:
+                template = template.replace('{sheet_param:' + param_name + '}', '')
+        
+        # Titleblock parameters
+        tblock_param_pattern = r'\{tblock_param:([^}]+)\}'
+        for param_name in re.findall(tblock_param_pattern, template):
+            try:
+                # Get titleblock from sheet
+                tblocks = FilteredElementCollector(doc, sheet.Id)\
+                    .OfCategory(BuiltInCategory.OST_TitleBlocks)\
+                    .ToElements()
+                
+                param_value = None
+                if tblocks:
+                    tblock = list(tblocks)[0]
+                    param = tblock.LookupParameter(param_name)
+                    if param:
+                        param_value = revit.query.get_param_value(param)
+                    else:
+                        # Try type parameter
+                        tblock_type = doc.GetElement(tblock.GetTypeId())
+                        param = tblock_type.LookupParameter(param_name)
+                        if param:
+                            param_value = revit.query.get_param_value(param)
+                
+                if param_value:
+                    template = template.replace('{tblock_param:' + param_name + '}', str(param_value))
+                else:
+                    template = template.replace('{tblock_param:' + param_name + '}', '')
+            except:
+                template = template.replace('{tblock_param:' + param_name + '}', '')
+        
+        # Project parameters
+        proj_param_pattern = r'\{proj_param:([^}]+)\}'
+        for param_name in re.findall(proj_param_pattern, template):
+            try:
+                proj_info = doc.ProjectInformation
+                param = proj_info.LookupParameter(param_name)
+                if param:
+                    param_value = revit.query.get_param_value(param)
+                    if param_value:
+                        template = template.replace('{proj_param:' + param_name + '}', str(param_value))
+                    else:
+                        template = template.replace('{proj_param:' + param_name + '}', '')
+                else:
+                    template = template.replace('{proj_param:' + param_name + '}', '')
+            except:
+                template = template.replace('{proj_param:' + param_name + '}', '')
+        
+        # Global parameters
+        glob_param_pattern = r'\{glob_param:([^}]+)\}'
+        for param_name in re.findall(glob_param_pattern, template):
+            try:
+                glob_param = revit.query.get_global_parameter(param_name, doc=doc)
+                if glob_param:
+                    param_value = revit.query.get_param_value(glob_param)
+                    if param_value:
+                        template = template.replace('{glob_param:' + param_name + '}', str(param_value))
+                    else:
+                        template = template.replace('{glob_param:' + param_name + '}', '')
+                else:
+                    template = template.replace('{glob_param:' + param_name + '}', '')
+            except:
+                template = template.replace('{glob_param:' + param_name + '}', '')
+        
+        # Standard sheet parameters
+        try:
+            issue_date_param = sheet.LookupParameter("Sheet Issue Date")
+            if issue_date_param:
+                template = template.replace('{issue_date}', issue_date_param.AsString() or "")
+            else:
+                template = template.replace('{issue_date}', "")
+        except:
+            template = template.replace('{issue_date}', "")
+        
+        # Revision info - Get the current revision shown on sheet
+        try:
+            # Try to get the "Current Revision" parameter value directly (as shown on sheet)
+            current_rev_param = sheet.LookupParameter("Current Revision")
+            sheet_rev_date_param = sheet.LookupParameter("Sheet Issue Date")
+            
+            if current_rev_param and current_rev_param.HasValue:
+                rev_value = current_rev_param.AsString()
+                template = template.replace('{rev_number}', rev_value if rev_value else '')
+            else:
+                template = template.replace('{rev_number}', '')
+            
+            if sheet_rev_date_param and sheet_rev_date_param.HasValue:
+                rev_date_value = sheet_rev_date_param.AsString()
+                template = template.replace('{rev_date}', rev_date_value if rev_date_value else '')
+            else:
+                template = template.replace('{rev_date}', '')
+            
+            # For revision description, try to get from the actual revision on sheet
+            sheet_rev_ids = sheet.GetAdditionalRevisionIds()
+            
+            if sheet_rev_ids and len(sheet_rev_ids) > 0:
+                # Get the latest revision on the sheet
+                all_revisions = FilteredElementCollector(doc)\
+                    .OfCategory(BuiltInCategory.OST_Revisions)\
+                    .WhereElementIsNotElementType()\
+                    .ToElements()
+                
+                sheet_revisions = [rev for rev in all_revisions if rev.Id in sheet_rev_ids]
+                
+                if sheet_revisions:
+                    sheet_revisions.sort(key=lambda r: r.SequenceNumber)
+                    latest_rev = sheet_revisions[-1]
+                    template = template.replace('{rev_desc}', latest_rev.Description if latest_rev.Description else '')
+                else:
+                    template = template.replace('{rev_desc}', '')
+            else:
+                template = template.replace('{rev_desc}', '')
+                
+        except Exception as e:
+            template = template.replace('{rev_number}', '')
+            template = template.replace('{rev_desc}', '')
+            template = template.replace('{rev_date}', '')
+        
+        # Project info
+        try:
+            proj_info = doc.ProjectInformation
+            
+            # Project Name
+            proj_name_param = proj_info.LookupParameter("Project Name")
+            if proj_name_param:
+                template = template.replace('{proj_name}', proj_name_param.AsString() or "")
+            else:
+                template = template.replace('{proj_name}', "")
+            
+            # Project Number
+            proj_num_param = proj_info.LookupParameter("Project Number")
+            if proj_num_param:
+                template = template.replace('{proj_number}', proj_num_param.AsString() or "")
+            else:
+                template = template.replace('{proj_number}', "")
+            
+            # Building Name
+            proj_bldg_param = proj_info.LookupParameter("Building Name")
+            if proj_bldg_param:
+                template = template.replace('{proj_building_name}', proj_bldg_param.AsString() or "")
+            else:
+                template = template.replace('{proj_building_name}', "")
+            
+            # Project Issue Date
+            proj_issue_param = proj_info.LookupParameter("Project Issue Date")
+            if proj_issue_param:
+                template = template.replace('{proj_issue_date}', proj_issue_param.AsString() or "")
+            else:
+                template = template.replace('{proj_issue_date}', "")
+            
+            # Organization Name
+            proj_org_param = proj_info.LookupParameter("Organization Name")
+            if proj_org_param:
+                template = template.replace('{proj_org_name}', proj_org_param.AsString() or "")
+            else:
+                template = template.replace('{proj_org_name}', "")
+            
+            # Project Status
+            proj_status_param = proj_info.LookupParameter("Project Status")
+            if proj_status_param:
+                template = template.replace('{proj_status}', proj_status_param.AsString() or "")
+            else:
+                template = template.replace('{proj_status}', "")
+                
+        except:
+            template = template.replace('{proj_name}', "")
+            template = template.replace('{proj_number}', "")
+            template = template.replace('{proj_building_name}', "")
+            template = template.replace('{proj_issue_date}', "")
+            template = template.replace('{proj_org_name}', "")
+            template = template.replace('{proj_status}', "")
+        
+        # User and Revit info
+        template = template.replace('{username}', HOST_APP.username)
+        template = template.replace('{revit_version}', str(HOST_APP.version))
+        
+        # Clean up any remaining unreplaced tags
+        template = re.sub(r'\{[^}]*\}', '', template)
+        
+        return template
+    
     def OnExport(self, sender, args):
-        """Export selected sheets"""
-        # Validation
-        selected_sheets = [item for item in self.sheet_items if item.IsSelected]
+        """Handle export"""
+        # Validate
+        selected_sheets = [item for item in self.filtered_sheet_items if item.IsSelected]
         
         if not selected_sheets:
-            forms.alert("Please select at least one sheet", title="Validation Error")
+            self.txtStatus.Text = "❌ No sheets selected"
             return
         
         if not self.chkExportPDF.IsChecked and not self.chkExportDWG.IsChecked:
-            forms.alert("Please select at least one export format (PDF or DWG)", 
-                       title="Validation Error")
+            self.txtStatus.Text = "❌ Select at least one export format"
             return
         
-        # Confirm
-        confirm_msg = "Export {} sheet(s)?\n\n".format(len(selected_sheets))
-        if self.chkExportPDF.IsChecked:
-            confirm_msg += "• PDF to: {}\n".format(self.pdf_path)
-        if self.chkExportDWG.IsChecked:
-            confirm_msg += "• DWG to: {}\n".format(self.dwg_path)
+        # Update paths
+        self.pdf_path = self.txtPDFPath.Text
+        self.dwg_path = self.txtDWGPath.Text
         
-        if not forms.alert(confirm_msg, yes=True, no=True, title="Confirm Export"):
-            return
-        
-        # Update UI
-        self.btnExport.IsEnabled = False
-        self.btnExport.Content = "EXPORTING..."
-        self.txtStatus.Text = "Exporting files..."
+        # Export
+        self.txtStatus.Text = "⏳ Exporting..."
+        output.print_md("---")
+        output.print_md("## Starting Export")
+        output.print_md("**Sheets**: {}".format(len(selected_sheets)))
         
         pdf_success = 0
         pdf_errors = 0
         dwg_success = 0
         dwg_errors = 0
         
-        try:
-            # Export PDF
-            if self.chkExportPDF.IsChecked:
-                pdf_success, pdf_errors = self.ExportPDF(selected_sheets)
-            
-            # Export DWG
-            if self.chkExportDWG.IsChecked:
-                dwg_success, dwg_errors = self.ExportDWG(selected_sheets)
-            
-            # Summary
-            summary = "Export complete!\n\n"
-            if self.chkExportPDF.IsChecked:
-                summary += "PDF - Success: {}, Errors: {}\n".format(pdf_success, pdf_errors)
-            if self.chkExportDWG.IsChecked:
-                summary += "DWG - Success: {}, Errors: {}\n".format(dwg_success, dwg_errors)
-            summary += "\nCheck output window for details."
-            
-            forms.alert(summary, title="Export Complete")
-            
-            output.print_md("### ✅ Export Complete")
-            if self.chkExportPDF.IsChecked:
-                output.print_md("**PDF** - Success: {}, Errors: {}".format(pdf_success, pdf_errors))
-            if self.chkExportDWG.IsChecked:
-                output.print_md("**DWG** - Success: {}, Errors: {}".format(dwg_success, dwg_errors))
-            
-            self.result = True
-            self._window.Close()
+        if self.chkExportPDF.IsChecked:
+            output.print_md("### Exporting PDFs...")
+            pdf_success, pdf_errors = self.ExportPDF(selected_sheets)
         
-        except Exception as e:
-            forms.alert("Export failed:\n\n{}".format(str(e)), title="Export Error")
-            output.print_md("### ✗ Export Failed")
-            output.print_md("**Error**: {}".format(str(e)))
+        if self.chkExportDWG.IsChecked:
+            output.print_md("### Exporting DWGs...")
+            dwg_success, dwg_errors = self.ExportDWG(selected_sheets)
         
-        finally:
-            self.btnExport.IsEnabled = True
-            self.btnExport.Content = "EXPORT FILES"
+        # Update status
+        total_success = pdf_success + dwg_success
+        total_errors = pdf_errors + dwg_errors
+        
+        status_msg = "✅ Complete: {} succeeded, {} failed".format(total_success, total_errors)
+        self.txtStatus.Text = status_msg
+        output.print_md("---")
+        output.print_md("## " + status_msg)
+        
+        self.result = True
     
     def ExportPDF(self, selected_sheets):
-        """Export sheets to PDF using PDFExportOptions (same as working Dynamo script)"""
+        """Export sheets to PDF"""
         success = 0
         errors = 0
         
-        pdf_naming = self.cmbPDFNaming.SelectedItem.ToString()
-        
-        # Create export directory if it doesn't exist
+        # Create directory
         if not os.path.exists(self.pdf_path):
             try:
                 os.makedirs(self.pdf_path)
@@ -537,9 +996,8 @@ class ExportPDFDWGWindow(Window):
                 return 0, len(selected_sheets)
         
         if self.chkPDFCombine.IsChecked:
-            # Combined PDF - all sheets in one file
+            # Combined PDF
             try:
-                # Create fresh PDF Export Options for combined
                 opts = PDFExportOptions()
                 opts.ExportQuality = PDFExportQualityType.DPI600
                 opts.PaperFormat = ExportPaperFormat.Default
@@ -561,10 +1019,8 @@ class ExportPDFDWGWindow(Window):
                 opts.Combine = True
                 opts.FileName = combined_name
                 
-                # Create list of sheet IDs - EXACTLY like Dynamo
                 sheetId = List[ElementId](item.Sheet.Id for item in selected_sheets)
                 
-                # Export
                 result = self.doc.Export(self.pdf_path, sheetId, opts)
                 
                 if result:
@@ -573,17 +1029,15 @@ class ExportPDFDWGWindow(Window):
                 else:
                     output.print_md("✗ PDF Combined: Export returned False")
                     errors = len(selected_sheets)
-                
+            
             except Exception as e:
                 output.print_md("✗ PDF Combined: {}".format(str(e)))
-                import traceback
-                output.print_md("Traceback: {}".format(traceback.format_exc()))
                 errors = len(selected_sheets)
         else:
-            # Individual PDFs - one file per sheet
+            # Individual PDFs
+            index = 1
             for item in selected_sheets:
                 try:
-                    # Create FRESH PDF Export Options for EACH sheet (critical!)
                     opts = PDFExportOptions()
                     opts.ExportQuality = PDFExportQualityType.DPI600
                     opts.PaperFormat = ExportPaperFormat.Default
@@ -598,20 +1052,17 @@ class ExportPDFDWGWindow(Window):
                     opts.ColorDepth = ColorDepthType.Color
                     opts.StopOnError = False
                     
-                    filename = self.GetFileName(item.Sheet, pdf_naming)
+                    filename = self.GenerateFileName(item.Sheet, self.selected_pdf_naming_format, index)
                     
-                    # Remove .pdf extension if present (Revit adds it automatically)
+                    # Remove .pdf extension (Revit adds it)
                     if filename.lower().endswith('.pdf'):
                         filename = filename[:-4]
                     
                     opts.FileName = filename
-                    # Don't set Combine property for individual exports
                     
-                    # Create list with single sheet ID
                     sheetId = List[ElementId]()
                     sheetId.Add(item.Sheet.Id)
                     
-                    # Export
                     result = self.doc.Export(self.pdf_path, sheetId, opts)
                     
                     if result:
@@ -621,10 +1072,10 @@ class ExportPDFDWGWindow(Window):
                         output.print_md("✗ PDF: {} - Export returned False".format(item.SheetNumber))
                         errors += 1
                     
+                    index += 1
+                    
                 except Exception as e:
                     output.print_md("✗ PDF: {} - {}".format(item.SheetNumber, str(e)))
-                    import traceback
-                    output.print_md("Details: {}".format(traceback.format_exc()))
                     errors += 1
         
         return success, errors
@@ -634,32 +1085,25 @@ class ExportPDFDWGWindow(Window):
         success = 0
         errors = 0
         
-        dwg_naming = self.cmbDWGNaming.SelectedItem.ToString()
-        
-        # Create export directory if it doesn't exist
+        # Create directory
         if not os.path.exists(self.dwg_path):
             os.makedirs(self.dwg_path)
         
-        # Get selected export setup name
+        # Get export setup
         setup_name = self.cmbDWGSetup.SelectedItem.ToString() if self.cmbDWGSetup.SelectedItem else "(Default)"
-        
-        # Check if using a custom export setup
         use_custom_setup = setup_name != "(Default)" and setup_name in self.dwg_setups
         
-        # DWG export options
         dwg_options = DWGExportOptions()
         
-        # If using custom setup, load it
         if use_custom_setup:
             try:
-                # Load the predefined setup
                 dwg_options = DWGExportOptions.GetPredefinedOptions(self.doc, setup_name)
                 output.print_md("Using DWG export setup: {}".format(setup_name))
             except Exception as e:
                 output.print_md("Warning: Could not load setup '{}', using defaults: {}".format(setup_name, str(e)))
                 dwg_options = DWGExportOptions()
         
-        # Try to set AutoCAD version
+        # Set AutoCAD version
         try:
             version_map = {
                 "AutoCAD 2018": ACADVersion.R2018,
@@ -672,25 +1116,36 @@ class ExportPDFDWGWindow(Window):
                 dwg_options.FileVersion = version_map[selected_version]
                 output.print_md("AutoCAD version: {}".format(selected_version))
         except Exception as e:
-            output.print_md("Note: Could not set AutoCAD version, using default: {}".format(str(e)))
+            output.print_md("Note: Could not set AutoCAD version: {}".format(str(e)))
         
-        # Export each sheet individually
+        # Export sheets
+        index = 1
         for item in selected_sheets:
             try:
                 sheet_ids = List[ElementId]()
                 sheet_ids.Add(item.Sheet.Id)
                 
-                filename = self.GetFileName(item.Sheet, dwg_naming)
+                filename = self.GenerateFileName(item.Sheet, self.selected_dwg_naming_format, index)
+                # Replace .pdf with .dwg
+                if filename.lower().endswith('.pdf'):
+                    filename = filename[:-4] + '.dwg'
+                elif not filename.lower().endswith('.dwg'):
+                    filename = filename + '.dwg'
                 
                 self.doc.Export(self.dwg_path, filename, sheet_ids, dwg_options)
                 
-                output.print_md("✓ DWG: {} - {}.dwg".format(item.SheetNumber, filename))
+                output.print_md("✓ DWG: {} - {}".format(item.SheetNumber, filename))
                 success += 1
+                index += 1
             except Exception as e:
                 output.print_md("✗ DWG: {} - {}".format(item.SheetNumber, str(e)))
                 errors += 1
         
         return success, errors
+    
+    def OnClose(self, sender, args):
+        """Handle close"""
+        self._window.Close()
     
     def ShowDialog(self):
         """Show dialog"""
