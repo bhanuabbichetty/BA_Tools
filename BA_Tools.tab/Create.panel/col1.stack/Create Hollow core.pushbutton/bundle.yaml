@@ -1,0 +1,31 @@
+title: "Create Hollow Core"
+version: "1.0"
+date: "2026-02-11"
+
+tooltip: |
+  Version = 1.0
+  Date    = 11.02.2026
+  ____________________________________
+  Description:
+
+  Place hollow core slabs (structural framing instances) automatically inside selected slab(s).
+  - Each hollow core spans the full slab length (min..max along span).
+  - Multiple cores are placed side-by-side across the slab width (perpendicular to span).
+  - Z offset (mm) applies immediately to the created instances (positive = up, negative = down).
+  - Optionally rotate the computed orientation by 90° (UI toggle).
+  - Multi-floor selection supported (batch placement).
+  ____________________________________
+  How-to:
+  -> Click the pushbutton
+  -> Select one or more floor elements (Finish to confirm)
+  -> In the dialog: pick hollow core family, enter Z offset (mm), check Rotate 90° if needed
+  -> Click PLACE HOLLOW CORES
+  -> Review output window for placement summary
+  ____________________________________
+  Last update:
+  - [11.02.2026] - 1.0 RELEASE
+  ____________________________________
+
+bundle_name: "Hollow Core Tools (pushbutton)"
+author: "Bhanu Prakash A"
+context: "doc-project"
