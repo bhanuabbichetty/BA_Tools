@@ -76,6 +76,7 @@ class TransferViewTemplatesWindow(Window):
         # Get controls
         self.imgLogo = self._window.FindName("imgLogo")
         self.btnClose = self._window.FindName("btnClose")
+        self.headerDragArea = self._window.FindName("headerDragArea")
         
         # Left panel
         self.cmbCopyFrom = self._window.FindName("cmbCopyFrom")
@@ -98,6 +99,11 @@ class TransferViewTemplatesWindow(Window):
         self.LoadLogo()
         self.LoadProjects()
         self.SetupEventHandlers()
+        self.headerDragArea.MouseLeftButtonDown += self.OnHeaderDrag
+
+    def OnHeaderDrag(self, sender, args):
+        """Allow window dragging from header"""
+        self._window.DragMove()
     
     def LoadLogo(self):
         """Load BA logo"""

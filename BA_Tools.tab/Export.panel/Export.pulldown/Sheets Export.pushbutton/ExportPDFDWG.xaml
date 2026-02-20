@@ -1,14 +1,26 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="BA-Tools" 
-        Width="1000" Height="750"
+        Title="BA-Tools"
+        Width="1000" Height="700"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanResize"
-        Background="#14141C"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
         x:Name="MainWindow">
-    
+
     <Window.Resources>
-        <!-- Button Styles -->
+
+        <!-- ── Slim Scrollbar ── -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Width" Value="5"/>
+        </Style>
+        <Style TargetType="ScrollViewer">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!-- ── Primary Button (Blue) ── -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Background" Value="#1976D2"/>
             <Setter Property="Foreground" Value="White"/>
@@ -20,312 +32,556 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="2" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2196F3"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Background" Value="#1C1C2C"/>
+                                <Setter Property="Foreground" Value="#404055"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#2196F3"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="#404050"/>
-                    <Setter Property="Foreground" Value="#707080"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-            <Setter Property="Background" Value="#3C3C46"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#4C4C56"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Text Styles -->
-        <Style x:Key="LabelText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#B0B0C0"/>
+        <!-- ── Secondary Button (Dark outline) ── -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#22223A"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
-        
+
+        <!-- ── Close Button ── -->
+        <Style x:Key="CloseButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="70"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1976D2"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── Dark TextBox ── -->
         <Style x:Key="DarkTextBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="CaretBrush" Value="#C8C8E8"/>
         </Style>
 
+        <!-- ── Dark ComboBox ── -->
         <Style x:Key="DarkComboBox" TargetType="ComboBox">
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="Black"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Padding" Value="6,4"/>
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Height" Value="32"/>
         </Style>
 
-        <!-- IMPROVED CHECKBOX STYLE - Bright and visible -->
+        <!-- ── Sheet CheckBox ── -->
         <Style x:Key="SheetCheckBox" TargetType="CheckBox">
-            <Setter Property="Foreground" Value="#E0E0E8"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,3"/>
         </Style>
+
+        <!-- ── Label Text ── -->
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#808090"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <!-- ── Section Label ── -->
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
     </Window.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="60"/>
-        </Grid.RowDefinitions>
+    <!-- ══════════════════════════════════════════════════════
+         OUTER SHELL — full dark, no OS chrome, rounded
+    ════════════════════════════════════════════════════════ -->
+    <Border Background="#0A0A12"
+            CornerRadius="12"
+            BorderBrush="#0A0A12"
+            BorderThickness="0">
 
-        <!-- HEADER -->
-        <Border Grid.Row="0" Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="0,0,0,2">
-            <Grid Margin="20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="BA" FontFamily="Segoe UI" FontSize="24" FontWeight="Bold" 
-                           Foreground="White" Background="#1976D2" Padding="10,5" VerticalAlignment="Center"/>
-                <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                    <TextBlock Text="PDF &amp; DWG EXPORT MANAGER" FontFamily="Segoe UI" FontSize="18" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="Export production and shop drawing sets to PDF and DWG" FontFamily="Segoe UI" FontSize="10" Foreground="#808090" Margin="0,2,0,0"/>
-                </StackPanel>
-                <Button x:Name="btnClose" Grid.Column="3" Content="Close" Width="80" Height="32" Style="{StaticResource SecondaryButton}"/>
-            </Grid>
-        </Border>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58"/>
+                <RowDefinition Height="26"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="64"/>
+            </Grid.RowDefinitions>
 
-        <!-- MAIN CONTENT -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="400"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- ══════════════════════════════════════════
+                 ROW 0 — TITLE BAR
+            ══════════════════════════════════════════════ -->
+            <Border x:Name="headerDragArea"
+                    Grid.Row="0"
+                    Background="#0E0E1A"
+                    CornerRadius="12,12,0,0"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="16,0,14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <!-- LEFT PANEL - Sheet Selection -->
-            <Border Grid.Column="0" Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="0,0,2,0" Padding="20">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Title -->
-                    <TextBlock Grid.Row="0" Text="SELECT SHEETS" Foreground="#1976D2" FontFamily="Segoe UI" 
-                               FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
-
-                    <!-- View Set & Filter -->
-                    <StackPanel Grid.Row="1" Margin="0,0,0,12">
-                        <TextBlock Text="View Set:" Style="{StaticResource LabelText}"/>
-                        <ComboBox x:Name="cmbViewSet" Style="{StaticResource DarkComboBox}" Margin="0,0,0,8"/>
-                        
-                        <TextBlock Text="Filter:" Style="{StaticResource LabelText}"/>
-                        <TextBox x:Name="txtSheetFilter" Style="{StaticResource DarkTextBox}" 
-                                 ToolTip="Search by sheet number or name"/>
-                    </StackPanel>
-
-                    <!-- Selection Buttons -->
-                    <Grid Grid.Row="2" Margin="0,0,0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="8"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="8"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Button x:Name="btnSelectAll" Grid.Column="0" Content="Select All" Height="28" Style="{StaticResource SecondaryButton}"/>
-                        <Button x:Name="btnClearAll" Grid.Column="2" Content="Clear All" Height="28" Style="{StaticResource SecondaryButton}"/>
-                        <TextBlock x:Name="txtSheetCount" Grid.Column="4" Text="0 / 0 selected" 
-                                   Foreground="#B0B0C0" FontSize="10" VerticalAlignment="Center"/>
-                    </Grid>
-
-                    <!-- Sheets List with IMPROVED VISIBILITY -->
-                    <Border Grid.Row="3" Background="#0A0A0F" BorderBrush="#1976D2" BorderThickness="1" CornerRadius="2">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <ItemsControl x:Name="lstSheets">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <!-- BRIGHT BACKGROUND ON HOVER -->
-                                        <Border BorderBrush="#2A2A38" BorderThickness="0,0,0,1" Padding="12,6">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background" Value="Transparent"/>
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#1A2A3A"/>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            
-                                            <CheckBox Content="{Binding DisplayText}" 
-                                                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                      Style="{StaticResource SheetCheckBox}"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
+                    <Border Grid.Column="0"
+                            Background="#1976D2"
+                            CornerRadius="8"
+                            Width="42" Height="42"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="BA"
+                                   FontSize="20" FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontFamily="Segoe UI"/>
                     </Border>
+
+                    <TextBlock Grid.Column="1"
+                               Text="PDF &amp; DWG EXPORT MANAGER"
+                               FontSize="18" FontWeight="Bold"
+                               Foreground="White" FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Margin="14,0,0,0"/>
+
+                    <Button x:Name="btnClose"
+                            Grid.Column="2"
+                            Content="Close"
+                            Style="{StaticResource CloseButton}"
+                            VerticalAlignment="Center"/>
                 </Grid>
             </Border>
 
-            <!-- RIGHT PANEL - Export Settings -->
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="20">
-                    
-                    <!-- Export Formats -->
-                    <TextBlock Text="EXPORT FORMATS" Foreground="#1976D2" FontFamily="Segoe UI" 
-                               FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                        <CheckBox x:Name="chkExportPDF" Content="Export to PDF" IsChecked="True" 
-                                  Foreground="#E0E0E8" FontSize="12" Margin="0,0,30,0"/>
-                        <CheckBox x:Name="chkExportDWG" Content="Export to DWG" IsChecked="True" 
-                                  Foreground="#E0E0E8" FontSize="12"/>
-                    </StackPanel>
+            <!-- ══════════════════════════════════════════
+                 ROW 1 — SUBTITLE
+            ══════════════════════════════════════════════ -->
+            <TextBlock Grid.Row="1"
+                       Text="Export production and shop drawing sets to PDF and DWG"
+                       FontSize="12" FontFamily="Segoe UI"
+                       Foreground="#FFCDA2"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
 
-                    <!-- PDF Settings -->
-                    <Border Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="1" CornerRadius="2" 
-                            Padding="15" Margin="0,0,0,15">
-                        <StackPanel>
-                            <TextBlock Text="PDF SETTINGS" Foreground="#1976D2" FontWeight="Bold" 
-                                       FontSize="12" Margin="0,0,0,12"/>
-                            
-                            <TextBlock Text="PDF Output Path:" Style="{StaticResource LabelText}"/>
-                            <Grid Margin="0,0,0,12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox x:Name="txtPDFPath" Grid.Column="0" Style="{StaticResource DarkTextBox}"/>
-                                <Button x:Name="btnBrowsePDF" Grid.Column="2" Content="Browse..." Width="80" Height="30" 
-                                        Style="{StaticResource SecondaryButton}"/>
-                            </Grid>
-
-                            <TextBlock Text="File Naming:" Style="{StaticResource LabelText}"/>
-                            <Grid Margin="0,0,0,12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ComboBox x:Name="cmbPDFNaming" Grid.Column="0" Style="{StaticResource DarkComboBox}"/>
-                                <Button x:Name="btnEditPDFFormats" Grid.Column="2" Content="Edit Formats" Width="100" Height="30" 
-                                        Style="{StaticResource SecondaryButton}"/>
-                            </Grid>
-
-                            <CheckBox x:Name="chkPDFCombine" Content="Combine all sheets into single PDF" 
-                                      Foreground="#E0E0E8" FontSize="11"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- DWG Settings -->
-                    <Border Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="1" CornerRadius="2" 
-                            Padding="15" Margin="0,0,0,15">
-                        <StackPanel>
-                            <TextBlock Text="DWG SETTINGS" Foreground="#1976D2" FontWeight="Bold" 
-                                       FontSize="12" Margin="0,0,0,12"/>
-                            
-                            <TextBlock Text="DWG Output Path:" Style="{StaticResource LabelText}"/>
-                            <Grid Margin="0,0,0,12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox x:Name="txtDWGPath" Grid.Column="0" Style="{StaticResource DarkTextBox}"/>
-                                <Button x:Name="btnBrowseDWG" Grid.Column="2" Content="Browse..." Width="80" Height="30" 
-                                        Style="{StaticResource SecondaryButton}"/>
-                            </Grid>
-
-                            <TextBlock Text="File Naming:" Style="{StaticResource LabelText}"/>
-                            <Grid Margin="0,0,0,12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ComboBox x:Name="cmbDWGNaming" Grid.Column="0" Style="{StaticResource DarkComboBox}"/>
-                                <Button x:Name="btnEditDWGFormats" Grid.Column="2" Content="Edit Formats" Width="100" Height="30" 
-                                        Style="{StaticResource SecondaryButton}"/>
-                            </Grid>
-
-                            <Grid Margin="0,0,0,12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Export Setup:" Style="{StaticResource LabelText}"/>
-                                    <ComboBox x:Name="cmbDWGSetup" Style="{StaticResource DarkComboBox}"/>
-                                </StackPanel>
-                                
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="AutoCAD Version:" Style="{StaticResource LabelText}"/>
-                                    <ComboBox x:Name="cmbDWGVersion" Style="{StaticResource DarkComboBox}"/>
-                                </StackPanel>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Naming Preview -->
-                    <Border Background="#0A0A0F" BorderBrush="#1976D2" BorderThickness="1" CornerRadius="2" 
-                            Padding="12">
-                        <StackPanel>
-                            <TextBlock Text="📋 NAMING PREVIEW" Foreground="#1976D2" FontWeight="SemiBold" 
-                                       FontSize="10" Margin="0,0,0,8"/>
-                            <TextBox x:Name="txtNamingPreview" 
-                                     Background="Transparent" 
-                                     Foreground="#B0B0C0" 
-                                     BorderThickness="0" 
-                                     FontFamily="Consolas" 
-                                     FontSize="9" 
-                                     TextWrapping="Wrap" 
-                                     IsReadOnly="True"
-                                     MinHeight="100"
-                                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                        </StackPanel>
-                    </Border>
-
-                </StackPanel>
-            </ScrollViewer>
-        </Grid>
-
-        <!-- FOOTER -->
-        <Border Grid.Row="2" Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="0,2,0,0">
-            <Grid Margin="20,0">
+            <!-- ══════════════════════════════════════════
+                 ROW 2 — MAIN CONTENT
+            ══════════════════════════════════════════════ -->
+            <Grid Grid.Row="2" Margin="16,8,16,8">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="380"/>
+                    <ColumnDefinition Width="12"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="txtStatus" Grid.Column="0" Text="Select sheets and configure export settings" 
-                           FontFamily="Segoe UI" FontSize="11" Foreground="#808090" VerticalAlignment="Center"/>
-                <Button x:Name="btnExport" Grid.Column="2" Content="EXPORT FILES" Width="200" Height="40" 
-                        Style="{StaticResource PrimaryButton}" FontSize="12"/>
+
+                <!-- ─────────────────────────────────────────
+                     LEFT PANEL — Sheet Selection
+                ───────────────────────────────────────────── -->
+                <Border Grid.Column="0"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        Padding="16,14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Panel Title -->
+                        <TextBlock Grid.Row="0"
+                                   Text="SELECT SHEETS"
+                                   Foreground="White"
+                                   FontFamily="Segoe UI"
+                                   FontSize="14" FontWeight="Bold"
+                                   Margin="0,0,0,12"/>
+
+                        <!-- View Set & Filter -->
+                        <StackPanel Grid.Row="1" Margin="0,0,0,12">
+                            <TextBlock Text="View Set:" Style="{StaticResource LabelText}"/>
+                            <ComboBox x:Name="cmbViewSet"
+                                      Style="{StaticResource DarkComboBox}"
+                                      Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Filter:" Style="{StaticResource LabelText}"/>
+                            <TextBox x:Name="txtSheetFilter"
+                                     Style="{StaticResource DarkTextBox}"
+                                     ToolTip="Search by sheet number or name"/>
+                        </StackPanel>
+
+                        <!-- Selection Buttons -->
+                        <Grid Grid.Row="2" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="btnSelectAll"
+                                    Grid.Column="0"
+                                    Content="Select All"
+                                    Height="28"
+                                    Style="{StaticResource SecondaryButton}"/>
+                            <Button x:Name="btnClearAll"
+                                    Grid.Column="2"
+                                    Content="Clear All"
+                                    Height="28"
+                                    Style="{StaticResource SecondaryButton}"/>
+                            <TextBlock x:Name="txtSheetCount"
+                                       Grid.Column="4"
+                                       Text="0 / 0 selected"
+                                       Foreground="#1976D2"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Sheets List -->
+                        <Border Grid.Row="3"
+                                Background="#0A0A12"
+                                BorderBrush="#1E1E2E"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          Padding="0,0,4,0">
+                                <ItemsControl x:Name="lstSheets">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#1E1E2E"
+                                                    BorderThickness="0,0,0,1"
+                                                    Padding="12,6">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="Transparent"/>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#1A2A3A"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <CheckBox Content="{Binding DisplayText}"
+                                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                          Style="{StaticResource SheetCheckBox}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ─────────────────────────────────────────
+                     RIGHT PANEL — Export Settings
+                ───────────────────────────────────────────── -->
+                <ScrollViewer Grid.Column="2"
+                              VerticalScrollBarVisibility="Auto"
+                              Padding="0,0,4,0">
+                    <StackPanel>
+
+                        <!-- Export Format Toggles -->
+                        <Border Background="#0E0E1A"
+                                CornerRadius="8"
+                                BorderBrush="#1976D2"
+                                BorderThickness="0.8"
+                                Padding="16,14"
+                                Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="EXPORT FORMATS"
+                                           Style="{StaticResource SectionLabel}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox x:Name="chkExportPDF"
+                                              Content="Export to PDF"
+                                              IsChecked="True"
+                                              Foreground="#C8C8E8"
+                                              FontSize="12"
+                                              Margin="0,0,30,0"/>
+                                    <CheckBox x:Name="chkExportDWG"
+                                              Content="Export to DWG"
+                                              IsChecked="True"
+                                              Foreground="#C8C8E8"
+                                              FontSize="12"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- PDF Settings Card -->
+                        <Border Background="#0E0E1A"
+                                CornerRadius="8"
+                                BorderBrush="#1976D2"
+                                BorderThickness="0.8"
+                                Padding="16,14"
+                                Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="PDF SETTINGS"
+                                           Style="{StaticResource SectionLabel}"/>
+
+                                <TextBlock Text="PDF Output Path:" Style="{StaticResource LabelText}"/>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="txtPDFPath"
+                                             Grid.Column="0"
+                                             Style="{StaticResource DarkTextBox}"/>
+                                    <Button x:Name="btnBrowsePDF"
+                                            Grid.Column="2"
+                                            Content="Browse..."
+                                            Width="80" Height="32"
+                                            Style="{StaticResource SecondaryButton}"/>
+                                </Grid>
+
+                                <TextBlock Text="File Naming:" Style="{StaticResource LabelText}"/>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox x:Name="cmbPDFNaming"
+                                              Grid.Column="0"
+                                              Style="{StaticResource DarkComboBox}"/>
+                                    <Button x:Name="btnEditPDFFormats"
+                                            Grid.Column="2"
+                                            Content="Edit Formats"
+                                            Width="100" Height="32"
+                                            Style="{StaticResource SecondaryButton}"/>
+                                </Grid>
+
+                                <CheckBox x:Name="chkPDFCombine"
+                                          Content="Combine all sheets into single PDF"
+                                          Foreground="#C8C8E8"
+                                          FontSize="11"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- DWG Settings Card -->
+                        <Border Background="#0E0E1A"
+                                CornerRadius="8"
+                                BorderBrush="#1976D2"
+                                BorderThickness="0.8"
+                                Padding="16,14"
+                                Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="DWG SETTINGS"
+                                           Style="{StaticResource SectionLabel}"/>
+
+                                <TextBlock Text="DWG Output Path:" Style="{StaticResource LabelText}"/>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="txtDWGPath"
+                                             Grid.Column="0"
+                                             Style="{StaticResource DarkTextBox}"/>
+                                    <Button x:Name="btnBrowseDWG"
+                                            Grid.Column="2"
+                                            Content="Browse..."
+                                            Width="80" Height="32"
+                                            Style="{StaticResource SecondaryButton}"/>
+                                </Grid>
+
+                                <TextBlock Text="File Naming:" Style="{StaticResource LabelText}"/>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox x:Name="cmbDWGNaming"
+                                              Grid.Column="0"
+                                              Style="{StaticResource DarkComboBox}"/>
+                                    <Button x:Name="btnEditDWGFormats"
+                                            Grid.Column="2"
+                                            Content="Edit Formats"
+                                            Width="100" Height="32"
+                                            Style="{StaticResource SecondaryButton}"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Export Setup:" Style="{StaticResource LabelText}"/>
+                                        <ComboBox x:Name="cmbDWGSetup"
+                                                  Style="{StaticResource DarkComboBox}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="AutoCAD Version:" Style="{StaticResource LabelText}"/>
+                                        <ComboBox x:Name="cmbDWGVersion"
+                                                  Style="{StaticResource DarkComboBox}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Naming Preview Card -->
+                        <Border Background="#0E0E1A"
+                                CornerRadius="8"
+                                BorderBrush="#1976D2"
+                                BorderThickness="0.8"
+                                Padding="16,14"
+                                Margin="0,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="📋  NAMING PREVIEW"
+                                           Foreground="#1976D2"
+                                           FontWeight="SemiBold"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI"
+                                           Margin="0,0,0,8"/>
+                                <Border Background="#0A0A12"
+                                        BorderBrush="#1E1E2E"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="10">
+                                    <TextBox x:Name="txtNamingPreview"
+                                             Background="Transparent"
+                                             Foreground="#606080"
+                                             BorderThickness="0"
+                                             FontFamily="Consolas"
+                                             FontSize="9"
+                                             TextWrapping="Wrap"
+                                             IsReadOnly="True"
+                                             MinHeight="100"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+
             </Grid>
-        </Border>
-    </Grid>
+
+            <!-- ══════════════════════════════════════════
+                 ROW 3 — FOOTER
+            ══════════════════════════════════════════════ -->
+            <Border Grid.Row="3"
+                    Background="#0E0E1A"
+                    CornerRadius="0,0,12,12"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,1,0,0"
+                    Padding="16,0">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="txtStatus"
+                               Grid.Column="0"
+                               Text="Select sheets and configure export settings"
+                               FontFamily="Segoe UI"
+                               FontSize="11"
+                               Foreground="#1976D2"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+
+                    <Button x:Name="btnExport"
+                            Grid.Column="2"
+                            Content="EXPORT FILES"
+                            Width="200" Height="36"
+                            Style="{StaticResource PrimaryButton}"
+                            FontSize="12"/>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
 </Window>

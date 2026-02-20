@@ -1,14 +1,26 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="BA_Tools" 
-        Width="1000" Height="700"
+        Title="BA_Tools"
+        Width="900" Height="700"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanResize"
-        Background="#14141C"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
         x:Name="MainWindow">
-    
+
     <Window.Resources>
-        <!-- Primary Button Style (Blue) -->
+
+        <!-- ── Slim Scrollbar ── -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Width" Value="5"/>
+        </Style>
+        <Style TargetType="ScrollViewer">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!-- ── Primary Button (Blue) ── -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Background" Value="#1976D2"/>
             <Setter Property="Foreground" Value="White"/>
@@ -20,35 +32,99 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="2"
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
                                 Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2196F3"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Background" Value="#1C1C2C"/>
+                                <Setter Property="Foreground" Value="#404055"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#2196F3"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
-        <!-- Secondary Button Style -->
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-            <Setter Property="Background" Value="#3C3C46"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#4C4C56"/>
-                </Trigger>
-            </Style.Triggers>
+        <!-- ── Secondary Button (Dark outline) ── -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#22223A"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- CheckBox Style -->
+        <!-- ── Close Button ── -->
+        <Style x:Key="CloseButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="70"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1976D2"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── Dark CheckBox ── -->
         <Style x:Key="DarkCheckBox" TargetType="CheckBox">
-            <Setter Property="Foreground" Value="#DCDCDC"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Template">
@@ -56,12 +132,12 @@
                     <ControlTemplate TargetType="CheckBox">
                         <StackPanel Orientation="Horizontal">
                             <Border x:Name="checkBorder"
-                                    Width="16" 
-                                    Height="16" 
-                                    Background="#0A0A0F"
+                                    Width="16"
+                                    Height="16"
+                                    Background="#0A0A12"
                                     BorderBrush="#1976D2"
                                     BorderThickness="2"
-                                    CornerRadius="2"
+                                    CornerRadius="3"
                                     Margin="0,0,8,0"
                                     VerticalAlignment="Center">
                                 <Path x:Name="checkMark"
@@ -78,34 +154,37 @@
                                 <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
                                 <Setter TargetName="checkBorder" Property="Background" Value="#1976D2"/>
                             </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="checkBorder" Property="BorderBrush" Value="#2196F3"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- TextBox Style -->
+        <!-- ── Dark TextBox ── -->
         <Style x:Key="DarkTextBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#0A0A0F"/>
-            <Setter Property="Foreground" Value="#DCDCDC"/>
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="8,5"/>
-            <Setter Property="CaretBrush" Value="#DCDCDC"/>
+            <Setter Property="CaretBrush" Value="#C8C8E8"/>
         </Style>
 
-        <!-- DataGrid Style -->
+        <!-- ── Dark DataGrid ── -->
         <Style x:Key="DarkDataGrid" TargetType="DataGrid">
-            <Setter Property="Background" Value="#0A0A0F"/>
-            <Setter Property="Foreground" Value="#DCDCDC"/>
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="RowBackground" Value="#0A0A0F"/>
-            <Setter Property="AlternatingRowBackground" Value="#14141C"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="RowBackground" Value="#0A0A12"/>
+            <Setter Property="AlternatingRowBackground" Value="#0E0E1A"/>
             <Setter Property="GridLinesVisibility" Value="None"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
             <Setter Property="AutoGenerateColumns" Value="False"/>
@@ -113,287 +192,378 @@
             <Setter Property="SelectionMode" Value="Extended"/>
         </Style>
 
-        <!-- DataGrid Column Header Style -->
+        <!-- ── DataGrid Column Header ── -->
         <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#1E1E28"/>
-            <Setter Property="Foreground" Value="#B0B0C0"/>
+            <Setter Property="Background" Value="#0E0E1A"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="8,5"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
         </Style>
 
-        <!-- RadioButton Style -->
+        <!-- ── Dark RadioButton ── -->
         <Style x:Key="DarkRadioButton" TargetType="RadioButton">
-            <Setter Property="Foreground" Value="#DCDCDC"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Margin" Value="0,5"/>
         </Style>
+
+        <!-- ── Section Label ── -->
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- ── Field Label ── -->
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
     </Window.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="70"/>
-        </Grid.RowDefinitions>
+    <!-- ══════════════════════════════════════════════════════
+         OUTER SHELL — full dark, no OS chrome, rounded
+    ════════════════════════════════════════════════════════ -->
+    <Border Background="#0A0A12"
+            CornerRadius="12"
+            BorderBrush="#0A0A12"
+            BorderThickness="0">
 
-        <!-- HEADER -->
-        <Border Grid.Row="0" Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="0,0,0,2">
-            <Grid Margin="20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- Logo -->
-                <Image x:Name="imgLogo" 
-                       Grid.Column="0"
-                       Width="40" 
-                       Height="40"
-                       VerticalAlignment="Center"
-                       Stretch="Uniform"/>
-                
-                <!-- Title -->
-                <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                    <TextBlock Text="ASSEMBLY ROTATION" 
-                             FontFamily="Segoe UI" 
-                             FontSize="16" 
-                             FontWeight="Bold" 
-                             Foreground="White"/>
-                    <TextBlock Text="Rotate assemblies based on erection mark orientation" 
-                             FontFamily="Segoe UI" 
-                             FontSize="10" 
-                             Foreground="#808090"
-                             Margin="0,2,0,0"/>
-                </StackPanel>
-                
-                <!-- Close Button -->
-                <Button x:Name="btnClose" 
-                        Grid.Column="3" 
-                        Content="✕" 
-                        Width="32" 
-                        Height="32"
-                        FontSize="16"
-                        Style="{StaticResource SecondaryButton}"/>
-            </Grid>
-        </Border>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58"/>
+                <RowDefinition Height="26"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="64"/>
+            </Grid.RowDefinitions>
 
-        <!-- MAIN CONTENT -->
-        <Grid Grid.Row="1" Margin="20,20,20,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- ══════════════════════════════════════════
+                 ROW 0 — TITLE BAR
+            ══════════════════════════════════════════════ -->
+            <Border x:Name="headerDragArea"
+                    Grid.Row="0"
+                    Background="#0E0E1A"
+                    CornerRadius="12,12,0,0"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="16,0,14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <!-- LEFT PANEL - Settings -->
-            <Border Grid.Column="0" Background="#1E1E28" CornerRadius="3" 
-                    BorderBrush="#1976D2" BorderThickness="1" Padding="20">
-                <StackPanel>
-                    <!-- Rotation Settings -->
-                    <TextBlock Text="ROTATION SETTINGS" 
-                             Foreground="#808090" 
-                             FontSize="10" 
-                             FontWeight="SemiBold"
-                             Margin="0,0,0,15"/>
-
-                    <!-- Rotation Axis -->
-                    <TextBlock Text="Rotation Axis:" 
-                             Foreground="#B0B0C0" 
-                             FontSize="11"
-                             Margin="0,0,0,8"/>
-                    
-                    <RadioButton x:Name="rbZ" Content="Z-Axis (Vertical)" 
-                               GroupName="Axis" IsChecked="True"
-                               Style="{StaticResource DarkRadioButton}"/>
-                    <RadioButton x:Name="rbX" Content="X-Axis" 
-                               GroupName="Axis"
-                               Style="{StaticResource DarkRadioButton}"/>
-                    <RadioButton x:Name="rbY" Content="Y-Axis" 
-                               GroupName="Axis"
-                               Style="{StaticResource DarkRadioButton}"/>
-
-                    <Rectangle Fill="#1976D2" Height="1" Margin="0,20,0,20"/>
-
-                    <!-- Rotation Angle -->
-                    <TextBlock Text="Rotation Method:" 
-                             Foreground="#B0B0C0" 
-                             FontSize="11"
-                             Margin="0,0,0,8"/>
-
-                    <RadioButton x:Name="rbAuto" Content="Auto (From Erection Mark)" 
-                               GroupName="Method" IsChecked="True"
-                               Style="{StaticResource DarkRadioButton}"/>
-                    <RadioButton x:Name="rbManual" Content="Manual Angle" 
-                               GroupName="Method"
-                               Style="{StaticResource DarkRadioButton}"/>
-
-                    <TextBlock Text="Angle (degrees):" 
-                             Foreground="#B0B0C0" 
-                             FontSize="11"
-                             Margin="0,15,0,5"/>
-                    <TextBox x:Name="txtAngle" 
-                           Text="90"
-                           Height="35"
-                           Style="{StaticResource DarkTextBox}"/>
-
-                    <Rectangle Fill="#1976D2" Height="1" Margin="0,20,0,20"/>
-
-                    <!-- Info -->
-                    <Border Background="#0A0A0F" BorderBrush="#1976D2" 
-                            BorderThickness="1" CornerRadius="2" Padding="12">
-                        <StackPanel>
-                            <TextBlock Text="ℹ How it works" 
-                                     Foreground="#1976D2" 
-                                     FontWeight="SemiBold"
-                                     FontSize="10"
-                                     Margin="0,0,0,5"/>
-                            <TextBlock TextWrapping="Wrap" 
-                                     Foreground="#B0B0C0" 
-                                     FontSize="9"
-                                     LineHeight="14">
-                                Auto: Finds 'Erection Mark' family in assembly and rotates based on its orientation (positive hand rotation).
-                                <LineBreak/>
-                                <LineBreak/>
-                                Manual: Rotates all assemblies by specified angle.
-                            </TextBlock>
-                        </StackPanel>
+                    <!-- BA Logo Badge -->
+                    <Border Grid.Column="0"
+                            Background="#1976D2"
+                            CornerRadius="8"
+                            Width="42" Height="42"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="BA"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontFamily="Segoe UI"/>
                     </Border>
-                </StackPanel>
-            </Border>
 
-            <!-- RIGHT PANEL - Assemblies Table -->
-            <Border Grid.Column="2" Background="#1E1E28" CornerRadius="3" 
-                    BorderBrush="#1976D2" BorderThickness="1" Padding="15">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="10"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="10"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+                    <!-- Title -->
+                    <TextBlock Grid.Column="1"
+                               Text="ASSEMBLY ROTATION"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Margin="14,0,0,0"/>
 
-                    <!-- Info Panel -->
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0">
-                            <TextBlock x:Name="txtAssemblyCount"
-                                     Text="Loading assemblies..." 
-                                     Foreground="#B0B0C0" 
-                                     FontSize="12"
-                                     FontWeight="SemiBold"/>
-                            <TextBlock x:Name="txtSelectedCount"
-                                     Text="0 selected" 
-                                     Foreground="#1976D2" 
-                                     FontSize="10"
-                                     FontWeight="Bold"
-                                     Margin="0,3,0,0"/>
-                        </StackPanel>
-
-                        <Button x:Name="btnRefresh"
-                              Grid.Column="2"
-                              Content="REFRESH"
-                              Width="100"
-                              Height="35"
-                              Style="{StaticResource SecondaryButton}"/>
-                    </Grid>
-
-                    <!-- Filter and Selection Buttons -->
-                    <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="5"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBox x:Name="txtSearch"
-                               Grid.Column="0"
-                               Style="{StaticResource DarkTextBox}"
-                               Height="32">
-                            <TextBox.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="2"/>
-                                </Style>
-                            </TextBox.Resources>
-                        </TextBox>
-
-                        <Button x:Name="btnSelectAll"
-                              Grid.Column="2"
-                              Content="SELECT ALL"
-                              Width="100"
-                              Height="32"
-                              Style="{StaticResource SecondaryButton}"/>
-
-                        <Button x:Name="btnDeselectAll"
-                              Grid.Column="4"
-                              Content="CLEAR"
-                              Width="80"
-                              Height="32"
-                              Style="{StaticResource SecondaryButton}"/>
-                    </Grid>
-
-                    <!-- Assemblies DataGrid -->
-                    <DataGrid x:Name="dgAssemblies"
-                            Grid.Row="4"
-                            Style="{StaticResource DarkDataGrid}"
-                            ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
-                            SelectionUnit="FullRow">
-                        <DataGrid.Columns>
-                            <DataGridCheckBoxColumn Header="✓" Width="40" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            <DataGridTextColumn Header="Assembly Name" Width="200" Binding="{Binding AssemblyName}" IsReadOnly="True">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="#1976D2"/>
-                                        <Setter Property="FontWeight" Value="SemiBold"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="Assembly ID" Width="100" Binding="{Binding AssemblyId}" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Elements" Width="80" Binding="{Binding ElementCount}" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Erection Mark" Width="120" Binding="{Binding ErectionMarkStatus}" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Rotation Needed" Width="120" Binding="{Binding CurrentAngle}" IsReadOnly="True"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <!-- Close Button -->
+                    <Button x:Name="btnClose"
+                            Grid.Column="2"
+                            Content="Close"
+                            Style="{StaticResource CloseButton}"
+                            VerticalAlignment="Center"/>
                 </Grid>
             </Border>
-        </Grid>
 
-        <!-- FOOTER -->
-        <Border Grid.Row="2" Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="0,2,0,0">
-            <Grid Margin="20,0">
+            <!-- ══════════════════════════════════════════
+                 ROW 1 — SUBTITLE
+            ══════════════════════════════════════════════ -->
+            <TextBlock Grid.Row="1"
+                       Text="Rotate assemblies based on erection mark orientation"
+                       FontSize="12"
+                       FontFamily="Segoe UI"
+                       Foreground="#FFCDA2"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+
+            <!-- ══════════════════════════════════════════
+                 ROW 2 — MAIN CONTENT
+            ══════════════════════════════════════════════ -->
+            <Grid Grid.Row="2" Margin="16,8,16,8">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="12"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock x:Name="txtStatus"
-                         Grid.Column="0"
-                         Text="Ready - Select assemblies to rotate"
-                         FontFamily="Segoe UI" 
-                         FontSize="11" 
-                         Foreground="#808090"
-                         VerticalAlignment="Center"/>
+                <!-- ─────────────────────────────────────────
+                     LEFT PANEL — Rotation Settings
+                ───────────────────────────────────────────── -->
+                <Border Grid.Column="0"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        Padding="16,14">
+                    <StackPanel>
 
-                <Button x:Name="btnRotate" 
-                        Grid.Column="1"
-                        Content="ROTATE ASSEMBLIES" 
-                        Width="200" 
-                        Height="40"
-                        Style="{StaticResource PrimaryButton}"/>
+                        <!-- Section title -->
+                        <TextBlock Text="ROTATION SETTINGS"
+                                   Style="{StaticResource SectionLabel}"/>
+
+                        <!-- Rotation Axis -->
+                        <TextBlock Text="ROTATION AXIS"
+                                   Style="{StaticResource FieldLabel}"/>
+
+                        <RadioButton x:Name="rbZ"
+                                     Content="Z-Axis (Vertical)"
+                                     GroupName="Axis"
+                                     IsChecked="True"
+                                     Style="{StaticResource DarkRadioButton}"/>
+                        <RadioButton x:Name="rbX"
+                                     Content="X-Axis"
+                                     GroupName="Axis"
+                                     Style="{StaticResource DarkRadioButton}"/>
+                        <RadioButton x:Name="rbY"
+                                     Content="Y-Axis"
+                                     GroupName="Axis"
+                                     Style="{StaticResource DarkRadioButton}"/>
+
+                        <!-- Divider -->
+                        <Rectangle Fill="#1976D2" Height="1" Margin="0,16,0,16" Opacity="0.4"/>
+
+                        <!-- Rotation Method -->
+                        <TextBlock Text="ROTATION METHOD"
+                                   Style="{StaticResource FieldLabel}"/>
+
+                        <RadioButton x:Name="rbAuto"
+                                     Content="Auto (From Erection Mark)"
+                                     GroupName="Method"
+                                     IsChecked="True"
+                                     Style="{StaticResource DarkRadioButton}"/>
+                        <RadioButton x:Name="rbManual"
+                                     Content="Manual Angle"
+                                     GroupName="Method"
+                                     Style="{StaticResource DarkRadioButton}"/>
+
+                        <!-- Angle Input -->
+                        <TextBlock Text="ANGLE (DEGREES)"
+                                   Style="{StaticResource FieldLabel}"
+                                   Margin="0,14,0,4"/>
+                        <TextBox x:Name="txtAngle"
+                                 Text="90"
+                                 Height="35"
+                                 Style="{StaticResource DarkTextBox}"/>
+
+                        <!-- Divider -->
+                        <Rectangle Fill="#1976D2" Height="1" Margin="0,16,0,16" Opacity="0.4"/>
+
+                        <!-- How it works info card -->
+                        <Border Background="#0A0A12"
+                                BorderBrush="#1976D2"
+                                BorderThickness="0.8"
+                                CornerRadius="6"
+                                Padding="12,10">
+                            <StackPanel>
+                                <TextBlock Text="ℹ  How it works"
+                                           Foreground="#1976D2"
+                                           FontWeight="SemiBold"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI"
+                                           Margin="0,0,0,6"/>
+                                <TextBlock TextWrapping="Wrap"
+                                           Foreground="#FFCDA2"
+                                           FontSize="9"
+                                           FontFamily="Segoe UI"
+                                           LineHeight="14">
+                                    Auto: Finds 'Erection Mark' family in assembly and rotates based on its orientation (positive hand rotation).
+                                    <LineBreak/>
+                                    <LineBreak/>
+                                    Manual: Rotates all assemblies by specified angle.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- ─────────────────────────────────────────
+                     RIGHT PANEL — Assemblies Table
+                ───────────────────────────────────────────── -->
+                <Border Grid.Column="2"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        Padding="16,14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Info Panel -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock x:Name="txtAssemblyCount"
+                                           Text="Loading assemblies..."
+                                           Foreground="White"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           FontFamily="Segoe UI"/>
+                                <TextBlock x:Name="txtSelectedCount"
+                                           Text="0 selected"
+                                           Foreground="#1976D2"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           FontFamily="Segoe UI"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+
+                            <Button x:Name="btnRefresh"
+                                    Grid.Column="2"
+                                    Content="REFRESH"
+                                    Width="100"
+                                    Height="32"
+                                    Style="{StaticResource SecondaryButton}"/>
+                        </Grid>
+
+                        <!-- Filter and Selection Buttons -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="6"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="txtSearch"
+                                     Grid.Column="0"
+                                     Style="{StaticResource DarkTextBox}"
+                                     Height="32"/>
+
+                            <Button x:Name="btnSelectAll"
+                                    Grid.Column="2"
+                                    Content="SELECT ALL"
+                                    Width="100"
+                                    Height="32"
+                                    Style="{StaticResource SecondaryButton}"/>
+
+                            <Button x:Name="btnDeselectAll"
+                                    Grid.Column="4"
+                                    Content="CLEAR"
+                                    Width="80"
+                                    Height="32"
+                                    Style="{StaticResource SecondaryButton}"/>
+                        </Grid>
+
+                        <!-- Assemblies DataGrid -->
+                        <Border Grid.Row="4"
+                                Background="#0A0A12"
+                                BorderBrush="#1E1E2E"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                            <DataGrid x:Name="dgAssemblies"
+                                      Style="{StaticResource DarkDataGrid}"
+                                      ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                                      SelectionUnit="FullRow"
+                                      Background="Transparent"
+                                      BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridCheckBoxColumn Header="✓" Width="40"
+                                        Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <DataGridTextColumn Header="Assembly Name" Width="200"
+                                        Binding="{Binding AssemblyName}" IsReadOnly="True">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Header="Assembly ID" Width="100"
+                                        Binding="{Binding AssemblyId}" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Elements" Width="80"
+                                        Binding="{Binding ElementCount}" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Erection Mark" Width="120"
+                                        Binding="{Binding ErectionMarkStatus}" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Rotation Needed" Width="120"
+                                        Binding="{Binding CurrentAngle}" IsReadOnly="True"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+
+                    </Grid>
+                </Border>
+
             </Grid>
-        </Border>
 
-    </Grid>
+            <!-- ══════════════════════════════════════════
+                 ROW 3 — FOOTER
+            ══════════════════════════════════════════════ -->
+            <Border Grid.Row="3"
+                    Background="#0E0E1A"
+                    CornerRadius="0,0,12,12"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,1,0,0"
+                    Padding="16,0">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Status -->
+                    <TextBlock x:Name="txtStatus"
+                               Grid.Column="0"
+                               Text="Ready — Select assemblies to rotate"
+                               FontFamily="Segoe UI"
+                               FontSize="11"
+                               Foreground="#1976D2"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+
+                    <!-- Rotate Button -->
+                    <Button x:Name="btnRotate"
+                            Grid.Column="1"
+                            Content="ROTATE ASSEMBLIES"
+                            Width="200"
+                            Height="36"
+                            Style="{StaticResource PrimaryButton}"/>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
 </Window>

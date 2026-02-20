@@ -444,6 +444,7 @@ class ExportPDFDWGWindow(Window):
         self.btnClearAll = self._window.FindName("btnClearAll")
         self.txtSheetCount = self._window.FindName("txtSheetCount")
         self.lstSheets = self._window.FindName("lstSheets")
+        self.headerDragArea = self._window.FindName("headerDragArea")
         
         # Export format checkboxes
         self.chkExportPDF = self._window.FindName("chkExportPDF")
@@ -472,6 +473,11 @@ class ExportPDFDWGWindow(Window):
         # Initialize
         self.InitializeData()
         self.SetupEventHandlers()
+        self.headerDragArea.MouseLeftButtonDown += self.OnHeaderDrag
+
+    def OnHeaderDrag(self, sender, args):
+        """Allow window dragging from header"""
+        self._window.DragMove()
     
     def InitializeData(self):
         """Initialize all dropdowns and data"""

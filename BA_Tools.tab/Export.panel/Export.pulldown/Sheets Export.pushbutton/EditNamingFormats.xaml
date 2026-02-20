@@ -3,18 +3,64 @@
         ShowInTaskbar="False"
         WindowStartupLocation="CenterScreen"
         HorizontalContentAlignment="Center"
-        ResizeMode="CanResizeWithGrip" 
-        Width="1000" Height="600" MinHeight="500"
-        Title="Naming Formats" 
+        ResizeMode="NoResize"
+        Width="1000" Height="700"
+        Title="Naming Formats"
         Closing="cancelled"
-        Background="#14141C">
-    
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
     <Window.Resources>
-        <!-- Modern Button Styles -->
+
+        <!-- ── Slim Scrollbar ── -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Width" Value="5"/>
+        </Style>
+        <Style TargetType="ScrollViewer">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!-- ── Primary / Modern Button (Blue) ── -->
         <Style x:Key="ModernButton" TargetType="Button">
             <Setter Property="Background" Value="#1976D2"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2196F3"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Background" Value="#1C1C2C"/>
+                                <Setter Property="Foreground" Value="#404055"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── Secondary Button (Dark outline) ── -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -22,69 +68,100 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="2" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#22223A"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#2196F3"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="#404050"/>
-                    <Setter Property="Foreground" Value="#707080"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
-            <Setter Property="Background" Value="#3C3C46"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#4C4C56"/>
-                </Trigger>
-            </Style.Triggers>
+        <!-- ── Close Button ── -->
+        <Style x:Key="CloseButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="70"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1976D2"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- Modern TextBox Style -->
+        <!-- ── Formatter TextBox ── -->
         <Style x:Key="FormatterTextBox" TargetType="{x:Type TextBox}">
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="FontFamily" Value="Consolas" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="MinHeight" Value="30" />
-            <Setter Property="Height" Value="30" />
-            <Setter Property="Margin" Value="0,5,0,0" />
-            <Setter Property="Padding" Value="8,6" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="0,5,0,0"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="CaretBrush" Value="#C8C8E8"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding builtin}" Value="True">
-                    <Setter Property="IsReadOnly" Value="True" />
-                    <Setter Property="IsEnabled" Value="False" />
-                    <Setter Property="Background" Value="#2A2A38"/>
-                    <Setter Property="Foreground" Value="#808090"/>
+                    <Setter Property="IsReadOnly" Value="True"/>
+                    <Setter Property="IsEnabled" Value="False"/>
+                    <Setter Property="Background" Value="#1A1A2A"/>
+                    <Setter Property="Foreground" Value="#606080"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
-        <!-- Modern ListBox Style -->
+        <!-- ── Modern ListBox ── -->
         <Style x:Key="ModernListBox" TargetType="ListBox">
-            <Setter Property="Background" Value="#0A0A0F"/>
+            <Setter Property="Background" Value="#0A0A12"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="#E0E0E8"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="FontFamily" Value="Consolas"/>
             <Setter Property="FontSize" Value="11"/>
         </Style>
 
-        <!-- ListBox Item Style -->
+        <!-- ── ListBox Item ── -->
         <Style TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#E0E0E8"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="Padding" Value="8,6"/>
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
@@ -97,222 +174,331 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Label Text Style -->
+        <!-- ── Label Text ── -->
         <Style x:Key="LabelText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#B0B0C0"/>
+            <Setter Property="Foreground" Value="#808090"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
 
-        <!-- Header Text Style -->
+        <!-- ── Header Text ── -->
         <Style x:Key="HeaderText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#1976D2"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
-        <!-- Description Text Style -->
+        <!-- ── Description Text ── -->
         <Style x:Key="DescriptionText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#808090"/>
+            <Setter Property="Foreground" Value="#FFCDA2"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="10"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
+
     </Window.Resources>
 
-    <Grid Margin="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="250" Width="1*" />
-            <ColumnDefinition Width="20" />
-            <ColumnDefinition MinWidth="500" Width="2*" />
-        </Grid.ColumnDefinitions>
+    <!-- ══════════════════════════════════════════════════════
+         OUTER SHELL — full dark, no OS chrome, rounded
+    ════════════════════════════════════════════════════════ -->
+    <Border Background="#0A0A12"
+            CornerRadius="12"
+            BorderBrush="#0A0A12"
+            BorderThickness="0">
 
-        <!-- LEFT PANEL - Naming Formats List -->
-        <Border Grid.Column="0" Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="1" CornerRadius="2" Padding="15">
-            <DockPanel>
-                <TextBlock Text="NAMING FORMATS" Style="{StaticResource HeaderText}" DockPanel.Dock="Top" Margin="0,0,0,12"/>
-                
-                <!-- Action Buttons -->
-                <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-                    <Grid Margin="0,0,0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="8"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Content="Duplicate" Height="32" Click="duplicate_namingformat" Style="{StaticResource SecondaryButton}"/>
-                        <Button Grid.Column="2" Content="Delete" Height="32" Click="delete_namingformat" Style="{StaticResource SecondaryButton}"/>
-                    </Grid>
-                    <Button Content="Save" Height="36" Click="save_formats" Style="{StaticResource ModernButton}"/>
-                </StackPanel>
-                
-                <!-- Formats List -->
-                <Border Background="#0A0A0F" BorderBrush="#1976D2" BorderThickness="1" CornerRadius="2" Margin="0,0,0,0">
-                    <ListBox x:Name="formats_lb" 
-                             Style="{StaticResource ModernListBox}"
-                             BorderThickness="0"
-                             SelectionChanged="namingformat_changed" 
-                             SelectionMode="Single" 
-                             SelectedIndex="0">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding name}" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Border>
-            </DockPanel>
-        </Border>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58"/>
+                <RowDefinition Height="26"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- RIGHT PANEL - Format Editor -->
-        <Border Grid.Column="2" Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="1" CornerRadius="2" Padding="20">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel x:Name="namingformat_edit">
-                    
-                    <!-- Format Title Section -->
-                    <TextBlock Text="FORMAT TITLE" Style="{StaticResource HeaderText}" Margin="0,0,0,8"/>
-                    <TextBlock Style="{StaticResource DescriptionText}" Margin="0,0,0,8">
-                        This is the name of this specific naming format. Give the format a descriptive name that is easy to understand and find. For example: "City of Portland ePermit"
-                    </TextBlock>
-                    <TextBox x:Name="template_name_tb"
-                             Text="{Binding name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource FormatterTextBox}"/>
+            <!-- ══════════════════════════════════════════
+                 ROW 0 — TITLE BAR
+            ══════════════════════════════════════════════ -->
+            <Border x:Name="headerDragArea"
+                    Grid.Row="0"
+                    Background="#0E0E1A"
+                    CornerRadius="12,12,0,0"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="16,0,14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                    <!-- Template Section -->
-                    <TextBlock Text="TEMPLATE" Style="{StaticResource HeaderText}" Margin="0,20,0,8" />
-                    <TextBlock Style="{StaticResource DescriptionText}" Margin="0,0,0,8">
-                        This is the actual naming format template. Each "{}" (tag) represents a value that will be filled when creating the name for a PDF file. Pick and choose from the tags listed below and drag them to this box.
-                    </TextBlock>
-                    <TextBox x:Name="template_tb"
-                             Text="{Binding template, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource FormatterTextBox}"
-                             AllowDrop="True" 
-                             PreviewDrop="stop_drag" 
-                             PreviewDragOver="preview_drag"/>
-
-                    <!-- Tags Section -->
-                    <TextBlock Text="DRAG AND DROP TAGS" Style="{StaticResource HeaderText}" Margin="0,20,0,8"/>
-                    <TextBlock Style="{StaticResource DescriptionText}" Margin="0,0,0,12">
-                        Drag and drop from formatters below. Hover over the formatter for description
-                    </TextBlock>
-                    
-                    <Border Background="#0A0A0F" BorderBrush="#1976D2" BorderThickness="1" CornerRadius="2" Padding="12">
-                        <ItemsControl x:Name="formatters_wp">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel IsItemsHost="True" PreviewMouseLeftButtonDown="start_drag"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border x:Name="formatter_box" 
-                                            Height="24" 
-                                            Margin="4,4,0,0" 
-                                            Background="#4A4A58" 
-                                            BorderThickness="0" 
-                                            CornerRadius="3" 
-                                            ToolTip="{Binding desc}"
-                                            Cursor="Hand">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="#5A5A68"/>
-                                                    </Trigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock Text="{Binding template}" 
-                                                   FontFamily="Consolas" 
-                                                   FontSize="11"
-                                                   Foreground="White" 
-                                                   VerticalAlignment="Center" 
-                                                   Margin="8,0,8,0" 
-                                                   Padding="0,0,0,1" />
-                                    </Border>
-                                    <DataTemplate.Triggers>
-                                        <!-- Orange for index -->
-                                        <DataTrigger Binding="{Binding template}" Value="{}{index}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#FF9800" />
-                                        </DataTrigger>
-                                        <!-- Blue for basic tags -->
-                                        <DataTrigger Binding="{Binding template}" Value="{}{number}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#1976D2" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{name}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#2A2A3A" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{name_dash}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#2A2A3A" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{name_underline}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#2A2A3A" />
-                                        </DataTrigger>
-                                        <!-- Teal for dates -->
-                                        <DataTrigger Binding="{Binding template}" Value="{}{current_date}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#00897B" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{issue_date}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#00897B" />
-                                        </DataTrigger>
-                                        <!-- Red for revision -->
-                                        <DataTrigger Binding="{Binding template}" Value="{}{rev_number}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#D32F2F" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{rev_desc}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#D32F2F" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{rev_date}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#D32F2F" />
-                                        </DataTrigger>
-                                        <!-- Purple for project -->
-                                        <DataTrigger Binding="{Binding template}" Value="{}{proj_name}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{proj_number}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{proj_building_name}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{proj_issue_date}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{proj_org_name}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{proj_status}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2" />
-                                        </DataTrigger>
-                                        <!-- Gray for user/system -->
-                                        <DataTrigger Binding="{Binding template}" Value="{}{username}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#616161" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{revit_version}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#616161" />
-                                        </DataTrigger>
-                                        <!-- Black for parameters -->
-                                        <DataTrigger Binding="{Binding template}" Value="{}{sheet_param:PARAM_NAME}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#1A1A22" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{tblock_param:PARAM_NAME}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#1A1A22" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{proj_param:PARAM_NAME}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#1A1A22" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding template}" Value="{}{glob_param:PARAM_NAME}">
-                                            <Setter TargetName="formatter_box" Property="Background" Value="#1A1A22" />
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                    <Border Grid.Column="0"
+                            Background="#1976D2"
+                            CornerRadius="8"
+                            Width="42" Height="42"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="BA"
+                                   FontSize="20" FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontFamily="Segoe UI"/>
                     </Border>
-                </StackPanel>
-            </ScrollViewer>
-        </Border>
-    </Grid>
+
+                    <TextBlock Grid.Column="1"
+                               Text="NAMING FORMATS EDITOR"
+                               FontSize="18" FontWeight="Bold"
+                               Foreground="White" FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Margin="14,0,0,0"/>
+
+                    <Button x:Name="btnClose"
+                            Grid.Column="2"
+                            Content="Close"
+                            Style="{StaticResource CloseButton}"
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- ══════════════════════════════════════════
+                 ROW 1 — SUBTITLE
+            ══════════════════════════════════════════════ -->
+            <TextBlock Grid.Row="1"
+                       Text="Create and manage naming format templates for PDF and DWG exports"
+                       FontSize="12" FontFamily="Segoe UI"
+                       Foreground="#FFCDA2"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+
+            <!-- ══════════════════════════════════════════
+                 ROW 2 — MAIN CONTENT
+            ══════════════════════════════════════════════ -->
+            <Grid Grid.Row="2" Margin="16,8,16,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MinWidth="250" Width="1*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition MinWidth="500" Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ─────────────────────────────────────────
+                     LEFT PANEL — Naming Formats List
+                ───────────────────────────────────────────── -->
+                <Border Grid.Column="0"
+                        Background="#0E0E1A"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        CornerRadius="8"
+                        Padding="16,14">
+                    <DockPanel>
+                        <TextBlock Text="NAMING FORMATS"
+                                   Style="{StaticResource HeaderText}"
+                                   DockPanel.Dock="Top"
+                                   Margin="0,0,0,12"/>
+
+                        <!-- Action Buttons -->
+                        <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="Duplicate" Height="32"
+                                        Click="duplicate_namingformat"
+                                        Style="{StaticResource SecondaryButton}"/>
+                                <Button Grid.Column="2" Content="Delete" Height="32"
+                                        Click="delete_namingformat"
+                                        Style="{StaticResource SecondaryButton}"/>
+                            </Grid>
+                            <Button Content="Save" Height="36"
+                                    Click="save_formats"
+                                    Style="{StaticResource ModernButton}"/>
+                        </StackPanel>
+
+                        <!-- Formats List -->
+                        <Border Background="#0A0A12"
+                                BorderBrush="#1E1E2E"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                            <ListBox x:Name="formats_lb"
+                                     Style="{StaticResource ModernListBox}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     SelectionChanged="namingformat_changed"
+                                     SelectionMode="Single"
+                                     SelectedIndex="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding name}"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Border>
+                    </DockPanel>
+                </Border>
+
+                <!-- ─────────────────────────────────────────
+                     RIGHT PANEL — Format Editor
+                ───────────────────────────────────────────── -->
+                <Border Grid.Column="2"
+                        Background="#0E0E1A"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        CornerRadius="8"
+                        Padding="20,14">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  Padding="0,0,4,0">
+                        <StackPanel x:Name="namingformat_edit">
+
+                            <!-- Format Title -->
+                            <TextBlock Text="FORMAT TITLE"
+                                       Style="{StaticResource HeaderText}"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Style="{StaticResource DescriptionText}" Margin="0,0,0,8">
+                                This is the name of this specific naming format. Give the format a descriptive name that is easy to understand and find. For example: "City of Portland ePermit"
+                            </TextBlock>
+                            <TextBox x:Name="template_name_tb"
+                                     Text="{Binding name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormatterTextBox}"/>
+
+                            <!-- Template -->
+                            <TextBlock Text="TEMPLATE"
+                                       Style="{StaticResource HeaderText}"
+                                       Margin="0,20,0,8"/>
+                            <TextBlock Style="{StaticResource DescriptionText}" Margin="0,0,0,8">
+                                This is the actual naming format template. Each "{}" (tag) represents a value that will be filled when creating the name for a PDF file. Pick and choose from the tags listed below and drag them to this box.
+                            </TextBlock>
+                            <TextBox x:Name="template_tb"
+                                     Text="{Binding template, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormatterTextBox}"
+                                     AllowDrop="True"
+                                     PreviewDrop="stop_drag"
+                                     PreviewDragOver="preview_drag"/>
+
+                            <!-- Tags Section -->
+                            <TextBlock Text="DRAG AND DROP TAGS"
+                                       Style="{StaticResource HeaderText}"
+                                       Margin="0,20,0,8"/>
+                            <TextBlock Style="{StaticResource DescriptionText}" Margin="0,0,0,12">
+                                Drag and drop from formatters below. Hover over the formatter for description
+                            </TextBlock>
+
+                            <Border Background="#0A0A12"
+                                    BorderBrush="#1976D2"
+                                    BorderThickness="0.8"
+                                    CornerRadius="6"
+                                    Padding="12">
+                                <ItemsControl x:Name="formatters_wp">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel IsItemsHost="True"
+                                                       PreviewMouseLeftButtonDown="start_drag"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border x:Name="formatter_box"
+                                                    Height="24"
+                                                    Margin="4,4,0,0"
+                                                    Background="#4A4A58"
+                                                    BorderThickness="0"
+                                                    CornerRadius="4"
+                                                    ToolTip="{Binding desc}"
+                                                    Cursor="Hand">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#5A5A68"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding template}"
+                                                           FontFamily="Consolas"
+                                                           FontSize="11"
+                                                           Foreground="White"
+                                                           VerticalAlignment="Center"
+                                                           Margin="8,0,8,0"
+                                                           Padding="0,0,0,1"/>
+                                            </Border>
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{index}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#FF9800"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{number}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#1976D2"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{name}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#2A2A3A"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{name_dash}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#2A2A3A"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{name_underline}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#2A2A3A"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{current_date}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#00897B"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{issue_date}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#00897B"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{rev_number}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#D32F2F"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{rev_desc}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#D32F2F"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{rev_date}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#D32F2F"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{proj_name}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{proj_number}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{proj_building_name}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{proj_issue_date}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{proj_org_name}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{proj_status}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#7B1FA2"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{username}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#616161"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{revit_version}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#616161"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{sheet_param:PARAM_NAME}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#1A1A22"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{tblock_param:PARAM_NAME}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#1A1A22"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{proj_param:PARAM_NAME}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#1A1A22"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding template}" Value="{}{glob_param:PARAM_NAME}">
+                                                    <Setter TargetName="formatter_box" Property="Background" Value="#1A1A22"/>
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+            </Grid>
+        </Grid>
+    </Border>
 </Window>

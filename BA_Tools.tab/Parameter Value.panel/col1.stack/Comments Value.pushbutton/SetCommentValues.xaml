@@ -1,58 +1,130 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="BA_Tools" 
-        Width="950" Height="700"
+        Title="BA_Tools"
+        Width="860" Height="700"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Background="#14141C">
-    
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
     <Window.Resources>
-        <!-- Primary Button Style (Blue) -->
+
+        <!-- ── Slim Scrollbar ── -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Width" Value="5"/>
+        </Style>
+        <Style TargetType="ScrollViewer">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!-- ── Primary Button (Blue) ── -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Background" Value="#1976D2"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="2"
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
                                 Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2196F3"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Background" Value="#1C1C2C"/>
+                                <Setter Property="Foreground" Value="#404055"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#2196F3"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="#404050"/>
-                    <Setter Property="Foreground" Value="#707080"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
-        <!-- Secondary Button Style (Gray) -->
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-            <Setter Property="Background" Value="#3C3C46"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#4C4C56"/>
-                </Trigger>
-            </Style.Triggers>
+        <!-- ── Secondary Button (Dark outline) ── -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#22223A"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- ComboBox Style -->
+        <!-- ── Close Button ── -->
+        <Style x:Key="CloseButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="70"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1976D2"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── Dark ComboBox ── -->
         <Style x:Key="DarkComboBox" TargetType="ComboBox">
-            <Setter Property="Background" Value="#0A0A0F"/>
-            <Setter Property="Foreground" Value="#0A0A0F"/>
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="Black"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -61,284 +133,444 @@
             <Setter Property="Padding" Value="8,5"/>
         </Style>
 
-        <!-- TextBox Style -->
+        <!-- ── Dark TextBox ── -->
         <Style x:Key="DarkTextBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#0A0A0F"/>
-            <Setter Property="Foreground" Value="#DCDCDC"/>
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="8,5"/>
-            <Setter Property="CaretBrush" Value="#DCDCDC"/>
+            <Setter Property="CaretBrush" Value="#C8C8E8"/>
         </Style>
 
-        <!-- Label Style -->
-        <Style x:Key="HeaderLabel" TargetType="Label">
-            <Setter Property="Foreground" Value="#808090"/>
+        <!-- ── Section Label ── -->
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- ── Field Label ── -->
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="10"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
 
-        <Style x:Key="ValueLabel" TargetType="Label">
-            <Setter Property="Foreground" Value="#B0B0C0"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="12"/>
-        </Style>
     </Window.Resources>
 
-    <Grid Margin="0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="70"/>
-        </Grid.RowDefinitions>
+    <!-- ══════════════════════════════════════════════════════
+         OUTER SHELL — full dark, no OS chrome, rounded
+    ════════════════════════════════════════════════════════ -->
+    <Border Background="#0A0A12"
+            CornerRadius="12"
+            BorderBrush="#0A0A12"
+            BorderThickness="0">
 
-        <!-- HEADER -->
-        <Border Grid.Row="0" Background="#1E1E28" BorderBrush="#1976D2" BorderThickness="0,0,0,2">
-            <Grid Margin="20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58"/>
+                <RowDefinition Height="26"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="64"/>
+            </Grid.RowDefinitions>
 
-                <!-- Logo/Icon -->
-                <Border Grid.Column="0" Background="#1976D2" CornerRadius="3" 
-                        Width="45" Height="45" VerticalAlignment="Center">
-                    <TextBlock Text="BA" FontSize="18" FontWeight="Bold" 
-                             Foreground="White" HorizontalAlignment="Center" 
-                             VerticalAlignment="Center" FontFamily="Segoe UI"/>
-                </Border>
+            <!-- ══════════════════════════════════════════
+                 ROW 0 — TITLE BAR
+            ══════════════════════════════════════════════ -->
+            <Border x:Name="headerDragArea"
+                    Grid.Row="0"
+                    Background="#0E0E1A"
+                    CornerRadius="12,12,0,0"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="16,0,14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- Title -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0">
-                    <TextBlock Text="COMMENT VALUE MANAGER" FontSize="18" 
-                             FontWeight="Bold" Foreground="White" FontFamily="Segoe UI"/>
-                    <TextBlock Text="Assign comment values by category, level, and type" 
-                             FontSize="12" Foreground="#808090" FontFamily="Segoe UI" 
-                             Margin="0,2,0,0"/>
-                </StackPanel>
-
-                <!-- Close Button -->
-                <Button x:Name="btnClose" Grid.Column="2" Content="Close" 
-                        Style="{StaticResource SecondaryButton}" 
-                        Width="85" Height="32" VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
-
-        <!-- MAIN CONTENT -->
-        <Grid Grid.Row="1" Margin="20,20,20,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="480"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- LEFT PANEL: Element Selection -->
-            <Border Grid.Column="0" Background="#1E1E28" CornerRadius="3" 
-                    BorderBrush="#1976D2" BorderThickness="1" Padding="20">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- STEP 1: Category -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,15">
-                        <Label Content="STEP 1: SELECT CATEGORY" Style="{StaticResource HeaderLabel}"/>
-                        <ComboBox x:Name="cmbCategory" Style="{StaticResource DarkComboBox}" Margin="0,5,0,0"/>
-                    </StackPanel>
-
-                    <!-- STEP 2: Level -->
-                    <StackPanel Grid.Row="1" Margin="0,0,0,15">
-                        <Label Content="STEP 2: SELECT LEVEL" Style="{StaticResource HeaderLabel}"/>
-                        <ComboBox x:Name="cmbLevel" Style="{StaticResource DarkComboBox}" Margin="0,5,0,0" IsEnabled="False"/>
-                    </StackPanel>
-
-                    <!-- STEP 3: Type -->
-                    <StackPanel Grid.Row="2" Margin="0,0,0,15">
-                        <Label Content="STEP 3: SELECT TYPE" Style="{StaticResource HeaderLabel}"/>
-                        <ComboBox x:Name="cmbType" Style="{StaticResource DarkComboBox}" Margin="0,5,0,0" IsEnabled="False"/>
-                    </StackPanel>
-
-                    <!-- Element Info -->
-                    <Grid Grid.Row="3" Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="SELECTED ELEMENTS" Style="{StaticResource HeaderLabel}" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="txtElementCount" Grid.Column="1" Text="0 elements" 
-                                 Foreground="#1976D2" FontFamily="Segoe UI" FontSize="11" 
-                                 FontWeight="SemiBold" VerticalAlignment="Center"/>
-                    </Grid>
-
-                    <!-- Element List -->
-                    <Border Grid.Row="4" Background="#0A0A0F" BorderBrush="#2C2C36" BorderThickness="1" CornerRadius="2">
-                        <TextBox x:Name="txtElementInfo" 
-                               Style="{StaticResource DarkTextBox}"
-                               BorderThickness="0"
-                               IsReadOnly="True"
-                               TextWrapping="NoWrap"
-                               AcceptsReturn="True"
-                               VerticalScrollBarVisibility="Auto"
-                               HorizontalScrollBarVisibility="Auto"
-                               FontFamily="Consolas"
-                               FontSize="11"
-                               Foreground="#808090"
-                               Text="Select category > level > type"/>
+                    <!-- BA Logo Badge -->
+                    <Border Grid.Column="0"
+                            Background="#1976D2"
+                            CornerRadius="8"
+                            Width="42" Height="42"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="BA"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontFamily="Segoe UI"/>
                     </Border>
+
+                    <!-- Title -->
+                    <TextBlock Grid.Column="1"
+                               Text="COMMENT VALUE MANAGER"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Margin="14,0,0,0"/>
+
+                    <!-- Close Button -->
+                    <Button x:Name="btnClose"
+                            Grid.Column="2"
+                            Content="Close"
+                            Style="{StaticResource CloseButton}"
+                            VerticalAlignment="Center"/>
                 </Grid>
             </Border>
 
-            <!-- RIGHT PANEL: Comment Assignment -->
-            <Border Grid.Column="1" Background="#1E1E28" CornerRadius="3" 
-                    BorderBrush="#1976D2" BorderThickness="1" Margin="10,0,0,0" Padding="20">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+            <!-- ══════════════════════════════════════════
+                 ROW 1 — SUBTITLE
+            ══════════════════════════════════════════════ -->
+            <TextBlock Grid.Row="1"
+                       Text="Assign comment values to elements filtered by category, level and type"
+                       FontSize="10"
+                       FontFamily="Segoe UI"
+                       Foreground="#FFCDA2"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
 
-                    <!-- STEP 4: Method Selection -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,15">
-                        <Label Content="STEP 4: ASSIGN COMMENTS" Style="{StaticResource HeaderLabel}"/>
-                        <Grid Margin="0,5,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Method:" Style="{StaticResource ValueLabel}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <ComboBox x:Name="cmbMethod" Grid.Column="1" Style="{StaticResource DarkComboBox}"/>
-                        </Grid>
-                    </StackPanel>
+            <!-- ══════════════════════════════════════════
+                 ROW 2 — MAIN CONTENT (two-column layout)
+            ══════════════════════════════════════════════ -->
+            <Grid Grid.Row="2" Margin="16,8,16,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="400"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                    <!-- Input Container -->
-                    <Border Grid.Row="1" Background="#0A0A0F" BorderBrush="#2C2C36" BorderThickness="1" 
-                            CornerRadius="2" Padding="15" Height="160" Margin="0,0,0,15">
-                        <Grid x:Name="inputContainer">
-                            <!-- Single Value -->
-                            <StackPanel x:Name="panelSingleValue">
-                                <Label Content="Comment Value:" Style="{StaticResource ValueLabel}" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtSingleValue" Style="{StaticResource DarkTextBox}" Height="32"/>
-                            </StackPanel>
-
-                            <!-- Sequential Numbers -->
-                            <StackPanel x:Name="panelSequential" Visibility="Collapsed">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <Label Content="Start Number:" Style="{StaticResource ValueLabel}" Margin="0,0,0,5"/>
-                                        <TextBox x:Name="txtSeqStart" Style="{StaticResource DarkTextBox}" Text="1" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <Label Content="Step:" Style="{StaticResource ValueLabel}" Margin="0,0,0,5"/>
-                                        <TextBox x:Name="txtSeqStep" Style="{StaticResource DarkTextBox}" Text="1" Height="32"/>
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-
-                            <!-- Sequential with Prefix -->
-                            <StackPanel x:Name="panelSequentialPrefix" Visibility="Collapsed">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <Label Content="Start Number:" Style="{StaticResource ValueLabel}" Margin="0,0,0,5"/>
-                                        <TextBox x:Name="txtPrefixSeqStart" Style="{StaticResource DarkTextBox}" Text="1" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <Label Content="Step:" Style="{StaticResource ValueLabel}" Margin="0,0,0,5"/>
-                                        <TextBox x:Name="txtPrefixSeqStep" Style="{StaticResource DarkTextBox}" Text="1" Height="32"/>
-                                    </StackPanel>
-                                </Grid>
-                                <Label Content="Prefix:" Style="{StaticResource ValueLabel}" Margin="0,10,0,5"/>
-                                <TextBox x:Name="txtPrefix" Style="{StaticResource DarkTextBox}" Height="32"/>
-                            </StackPanel>
-
-                            <!-- Comma-Separated -->
-                            <StackPanel x:Name="panelCSV" Visibility="Collapsed">
-                                <Label Content="Comma-separated values (or one per line):" Style="{StaticResource ValueLabel}" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtCSV" 
-                                       Style="{StaticResource DarkTextBox}"
-                                       Height="110"
-                                       TextWrapping="Wrap"
-                                       AcceptsReturn="True"
-                                       VerticalScrollBarVisibility="Auto"/>
-                            </StackPanel>
-
-                            <!-- Based on Mark Order -->
-                            <StackPanel x:Name="panelMarkOrder" Visibility="Collapsed">
-                                <Label Content="Prefix for numbering:" Style="{StaticResource ValueLabel}" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtMarkPrefix" Style="{StaticResource DarkTextBox}" Height="32"/>
-                                <TextBlock Text="Elements will be sorted by Mark value and numbered sequentially" 
-                                         FontFamily="Segoe UI" FontSize="9" Foreground="#808090" 
-                                         Margin="0,10,0,0" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-
-                    <!-- Preview -->
-                    <Grid Grid.Row="2">
+                <!-- ─────────────────────────────────────────
+                     LEFT PANEL — Element Selection
+                ───────────────────────────────────────────── -->
+                <Border Grid.Column="0"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        Padding="16,14"
+                        Margin="0,0,8,0">
+                    <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <Label Grid.Row="0" Content="PREVIEW" Style="{StaticResource HeaderLabel}" Margin="0,0,0,5"/>
-                        <Border Grid.Row="1" Background="#0A0A0F" BorderBrush="#2C2C36" BorderThickness="1" CornerRadius="2">
-                            <TextBox x:Name="txtPreview" 
-                                   Style="{StaticResource DarkTextBox}"
-                                   BorderThickness="0"
-                                   IsReadOnly="True"
-                                   TextWrapping="NoWrap"
-                                   AcceptsReturn="True"
-                                   VerticalScrollBarVisibility="Auto"
-                                   HorizontalScrollBarVisibility="Auto"
-                                   FontFamily="Consolas"
-                                   FontSize="9"
-                                   Foreground="#808090"
-                                   Text="Click 'Generate Preview'..."/>
-                        </Border>
+                        <!-- Card Header -->
+                        <TextBlock Grid.Row="0"
+                                   Text="ELEMENT SELECTION"
+                                   Style="{StaticResource SectionLabel}"/>
+
+                        <!-- Step 1: Category -->
+                        <StackPanel Grid.Row="1" Margin="0,0,0,12">
+                            <TextBlock Text="STEP 1 — SELECT CATEGORY"
+                                       Style="{StaticResource FieldLabel}"/>
+                            <ComboBox x:Name="cmbCategory"
+                                      Style="{StaticResource DarkComboBox}"/>
+                        </StackPanel>
+
+                        <!-- Step 2: Level -->
+                        <StackPanel Grid.Row="2" Margin="0,0,0,12">
+                            <TextBlock Text="STEP 2 — SELECT LEVEL"
+                                       Style="{StaticResource FieldLabel}"/>
+                            <ComboBox x:Name="cmbLevel"
+                                      Style="{StaticResource DarkComboBox}"
+                                      IsEnabled="False"/>
+                        </StackPanel>
+
+                        <!-- Step 3: Type -->
+                        <StackPanel Grid.Row="3" Margin="0,0,0,12">
+                            <TextBlock Text="STEP 3 — SELECT TYPE"
+                                       Style="{StaticResource FieldLabel}"/>
+                            <ComboBox x:Name="cmbType"
+                                      Style="{StaticResource DarkComboBox}"
+                                      IsEnabled="False"/>
+                        </StackPanel>
+
+                        <!-- Element count + info list -->
+                        <Grid Grid.Row="4">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Count badge row -->
+                            <Grid Grid.Row="0" Margin="0,0,0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0"
+                                           Text="SELECTED ELEMENTS"
+                                           Style="{StaticResource FieldLabel}"
+                                           VerticalAlignment="Center"
+                                           Margin="0"/>
+                                <TextBlock x:Name="txtElementCount"
+                                           Grid.Column="1"
+                                           Text="0 elements"
+                                           Foreground="#1976D2"
+                                           FontFamily="Segoe UI"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <!-- Element list -->
+                            <Border Grid.Row="1"
+                                    Background="#0A0A12"
+                                    BorderBrush="#1E1E2E"
+                                    BorderThickness="1"
+                                    CornerRadius="6">
+                                <TextBox x:Name="txtElementInfo"
+                                         Style="{StaticResource DarkTextBox}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         IsReadOnly="True"
+                                         TextWrapping="NoWrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"
+                                         HorizontalScrollBarVisibility="Auto"
+                                         FontFamily="Consolas"
+                                         FontSize="10"
+                                         Foreground="#A0A0C0"
+                                         Text="Select category > level > type"/>
+                            </Border>
+                        </Grid>
                     </Grid>
+                </Border>
+
+                <!-- ─────────────────────────────────────────
+                     RIGHT PANEL — Comment Assignment
+                ───────────────────────────────────────────── -->
+                <Border Grid.Column="1"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        Padding="16,14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Card Header -->
+                        <TextBlock Grid.Row="0"
+                                   Text="STEP 4 — ASSIGN COMMENTS"
+                                   Style="{StaticResource SectionLabel}"/>
+
+                        <!-- Method selector + Input Container -->
+                        <StackPanel Grid.Row="1" Margin="0,0,0,12">
+
+                            <!-- Method ComboBox -->
+                            <TextBlock Text="ASSIGNMENT METHOD"
+                                       Style="{StaticResource FieldLabel}"/>
+                            <ComboBox x:Name="cmbMethod"
+                                      Style="{StaticResource DarkComboBox}"
+                                      Margin="0,0,0,12"/>
+
+                            <!-- Input Container -->
+                            <Border Background="#0A0A12"
+                                    BorderBrush="#1E1E2E"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="14,12"
+                                    MinHeight="140">
+                                <Grid x:Name="inputContainer">
+
+                                    <!-- Single Value -->
+                                    <StackPanel x:Name="panelSingleValue">
+                                        <TextBlock Text="Comment Value:"
+                                                   Style="{StaticResource FieldLabel}"/>
+                                        <TextBox x:Name="txtSingleValue"
+                                                 Style="{StaticResource DarkTextBox}"
+                                                 Height="32"/>
+                                    </StackPanel>
+
+                                    <!-- Sequential Numbers -->
+                                    <StackPanel x:Name="panelSequential" Visibility="Collapsed">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="10"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Start Number:"
+                                                           Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="txtSeqStart"
+                                                         Style="{StaticResource DarkTextBox}"
+                                                         Text="1" Height="32"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Step:"
+                                                           Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="txtSeqStep"
+                                                         Style="{StaticResource DarkTextBox}"
+                                                         Text="1" Height="32"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Sequential with Prefix -->
+                                    <StackPanel x:Name="panelSequentialPrefix" Visibility="Collapsed">
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="10"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Start Number:"
+                                                           Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="txtPrefixSeqStart"
+                                                         Style="{StaticResource DarkTextBox}"
+                                                         Text="1" Height="32"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Step:"
+                                                           Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="txtPrefixSeqStep"
+                                                         Style="{StaticResource DarkTextBox}"
+                                                         Text="1" Height="32"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <TextBlock Text="Prefix:"
+                                                   Style="{StaticResource FieldLabel}"/>
+                                        <TextBox x:Name="txtPrefix"
+                                                 Style="{StaticResource DarkTextBox}"
+                                                 Height="32"/>
+                                    </StackPanel>
+
+                                    <!-- Comma-Separated -->
+                                    <StackPanel x:Name="panelCSV" Visibility="Collapsed">
+                                        <TextBlock Text="Comma-separated values (or one per line):"
+                                                   Style="{StaticResource FieldLabel}"/>
+                                        <TextBox x:Name="txtCSV"
+                                                 Style="{StaticResource DarkTextBox}"
+                                                 Height="110"
+                                                 TextWrapping="Wrap"
+                                                 AcceptsReturn="True"
+                                                 VerticalScrollBarVisibility="Auto"/>
+                                    </StackPanel>
+
+                                    <!-- Based on Mark Order -->
+                                    <StackPanel x:Name="panelMarkOrder" Visibility="Collapsed">
+                                        <TextBlock Text="Prefix for numbering:"
+                                                   Style="{StaticResource FieldLabel}"/>
+                                        <TextBox x:Name="txtMarkPrefix"
+                                                 Style="{StaticResource DarkTextBox}"
+                                                 Height="32"/>
+                                        <TextBlock Text="Elements will be sorted by Mark value and numbered sequentially"
+                                                   FontFamily="Segoe UI"
+                                                   FontSize="9"
+                                                   Foreground="#FFCDA2"
+                                                   Margin="0,10,0,0"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Preview section -->
+                        <Grid Grid.Row="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Text="PREVIEW"
+                                       Style="{StaticResource FieldLabel}"
+                                       Margin="0,0,0,6"/>
+
+                            <Border Grid.Row="1"
+                                    Background="#0A0A12"
+                                    BorderBrush="#1E1E2E"
+                                    BorderThickness="1"
+                                    CornerRadius="6">
+                                <TextBox x:Name="txtPreview"
+                                         Style="{StaticResource DarkTextBox}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         IsReadOnly="True"
+                                         TextWrapping="NoWrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"
+                                         HorizontalScrollBarVisibility="Auto"
+                                         FontFamily="Consolas"
+                                         FontSize="9"
+                                         Foreground="#A0A0C0"
+                                         Text="Click 'PREVIEW' to see changes..."/>
+                            </Border>
+                        </Grid>
+
+                    </Grid>
+                </Border>
+
+            </Grid>
+
+            <!-- ══════════════════════════════════════════
+                 ROW 3 — FOOTER
+            ══════════════════════════════════════════════ -->
+            <Border Grid.Row="3"
+                    Background="#0E0E1A"
+                    CornerRadius="0,0,12,12"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,1,0,0"
+                    Padding="16,0">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Status Text -->
+                    <TextBlock x:Name="txtStatus"
+                               Grid.Column="0"
+                               Text="Select elements and configure method"
+                               Foreground="#1976D2"
+                               FontFamily="Segoe UI"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+
+                    <!-- Preview Button -->
+                    <Button x:Name="btnPreview"
+                            Grid.Column="1"
+                            Content="PREVIEW"
+                            Style="{StaticResource SecondaryButton}"
+                            Width="130" Height="36"
+                            Margin="0,0,10,0"
+                            IsEnabled="False"/>
+
+                    <!-- Apply Button -->
+                    <Button x:Name="btnApply"
+                            Grid.Column="2"
+                            Content="APPLY COMMENTS"
+                            Style="{StaticResource PrimaryButton}"
+                            Width="160" Height="36"
+                            IsEnabled="False"/>
                 </Grid>
             </Border>
+
         </Grid>
-
-        <!-- FOOTER: Action Buttons -->
-        <Border Grid.Row="2" Background="#1E1E28" BorderBrush="#2C2C36" 
-                BorderThickness="0,1,0,0" Padding="20,0">
-            <Grid VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBlock x:Name="txtStatus" Grid.Column="0" 
-                         Text="Select elements and configure method" 
-                         Foreground="#1976D2" FontFamily="Segoe UI" 
-                         FontSize="11" VerticalAlignment="Center"/>
-
-                <Button x:Name="btnPreview" Content="GENERATE PREVIEW" 
-                        Style="{StaticResource SecondaryButton}" 
-                        Grid.Column="1" Width="180" Height="45" Margin="0,0,10,0"/>
-                <Button x:Name="btnApply" Content="APPLY COMMENTS" 
-                        Style="{StaticResource PrimaryButton}" 
-                        Grid.Column="2" Width="200" Height="45"/>
-            </Grid>
-        </Border>
-    </Grid>
+    </Border>
 </Window>

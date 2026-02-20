@@ -204,6 +204,17 @@ class WorksetCreatorWindow(Window):
         self.btnCreate.Click += self.OnCreate
         self.btnAddCustom.Click += self.OnAddCustomWorkset
         self.txtCustomWorkset.KeyDown += self.OnCustomWorksetKeyDown
+        # Wire drag handler for borderless window
+        header_border = self._window.FindName("headerDragArea")
+        if header_border:
+            header_border.MouseLeftButtonDown += self.OnHeaderDrag
+
+    def OnHeaderDrag(self, sender, args):
+        """Allow dragging the borderless window by its title bar"""
+        try:
+            self._window.DragMove()
+        except Exception:
+            pass
     
     def OnClose(self, sender, args):
         """Close window"""

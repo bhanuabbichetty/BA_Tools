@@ -1,12 +1,12 @@
 layout:
   - Workset
-  - Project Location
+  - Location
+  - Visibility
   - Annotate
   - Parameter Value
-  - Create
+  - Modeling
   - Assembly
-  - Revision
-  - Title Block
+  - TitleBlock
   - Views
   - Export
   

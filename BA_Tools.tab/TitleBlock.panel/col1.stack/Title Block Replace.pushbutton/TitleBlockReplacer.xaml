@@ -1,0 +1,548 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="BA_Tools"
+        Width="860" Height="700"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
+    <Window.Resources>
+
+        <!-- ── Slim Scrollbar ── -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Width" Value="5"/>
+        </Style>
+        <Style TargetType="ScrollViewer">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!-- ── Primary Button (Blue) ── -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1976D2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2196F3"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Background" Value="#1C1C2C"/>
+                                <Setter Property="Foreground" Value="#404055"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── Secondary Button (Dark outline) ── -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#22223A"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── Close Button ── -->
+        <Style x:Key="CloseButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="70"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1976D2"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── TextBox Style ── -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#0A0A14"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="CaretBrush" Value="#FFFFFF"/>
+            <Setter Property="SelectionBrush" Value="#1976D2"/>
+        </Style>
+
+        <!-- ── ComboBox Style ── -->
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,6"/>
+        </Style>
+
+    </Window.Resources>
+
+    <!-- ══════════════════════════════════════════════════════
+         OUTER SHELL — full dark, no OS chrome, rounded
+    ════════════════════════════════════════════════════════ -->
+    <Border Background="#0A0A12"
+            CornerRadius="12"
+            BorderBrush="#0A0A12"
+            BorderThickness="0">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58"/>
+                <RowDefinition Height="26"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="64"/>
+            </Grid.RowDefinitions>
+
+            <!-- ══════════════════════════════════════════
+                 ROW 0 — TITLE BAR (drag to move)
+            ══════════════════════════════════════════════ -->
+            <Border x:Name="headerDragArea"
+                    Grid.Row="0"
+                    Background="#0E0E1A"
+                    CornerRadius="12,12,0,0"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="16,0,14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 42 x 42 Logo badge -->
+                    <Border Grid.Column="0"
+                            Background="#1976D2"
+                            CornerRadius="8"
+                            Width="42" Height="42"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="BA"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontFamily="Segoe UI"/>
+                    </Border>
+
+                    <!-- Heading FontSize=18 -->
+                    <TextBlock Grid.Column="1"
+                               Text="TITLE BLOCK REPLACER"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Margin="14,0,0,0"/>
+
+                    <!-- Close button -->
+                    <Button x:Name="btnClose"
+                            Grid.Column="2"
+                            Content="Close"
+                            Style="{StaticResource CloseButton}"
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- ══════════════════════════════════════════
+                 ROW 1 — SUBTITLE
+            ══════════════════════════════════════════════ -->
+            <TextBlock Grid.Row="1"
+                       Text="Replace title blocks on selected sheets"
+                       FontSize="12"
+                       FontFamily="Segoe UI"
+                       Foreground="#FFCDA2"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+
+            <!-- ══════════════════════════════════════════
+                 ROW 2 — MAIN CONTENT (2 columns)
+            ══════════════════════════════════════════════ -->
+            <Grid Grid.Row="2" Margin="16,8,16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="380"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ══ LEFT PANEL — TITLE BLOCK SELECTION ══ -->
+                <Border Grid.Column="0"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        Margin="0,0,8,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Title Block Selection -->
+                        <StackPanel Grid.Row="0" Margin="16,14">
+                            <TextBlock Text="NEW TITLE BLOCK"
+                                       FontSize="14"
+                                       FontFamily="Segoe UI"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       Margin="0,0,0,12"/>
+
+                            <TextBlock Text="Family:"
+                                       FontSize="12"
+                                       FontFamily="Segoe UI"
+                                       Foreground="#C0C0E0"
+                                       Margin="0,0,0,6"/>
+                            <ComboBox x:Name="cmbFamily"
+                                      Style="{StaticResource ModernComboBox}"
+                                      Height="36"
+                                      Margin="0,0,0,14"/>
+
+                            <TextBlock Text="Type:"
+                                       FontSize="12"
+                                       FontFamily="Segoe UI"
+                                       Foreground="#C0C0E0"
+                                       Margin="0,0,0,6"/>
+                            <ComboBox x:Name="cmbType"
+                                      Style="{StaticResource ModernComboBox}"
+                                      Height="36"/>
+                        </StackPanel>
+
+                        <!-- Options -->
+                        <Border Grid.Row="1"
+                                Background="#0A0A12"
+                                BorderBrush="#1976D2"
+                                BorderThickness="0.8"
+                                CornerRadius="6"
+                                Margin="16,0,16,14"
+                                Padding="14,12">
+                            <StackPanel>
+                                <TextBlock Text="OPTIONS"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI"
+                                           FontWeight="Bold"
+                                           Foreground="#8888AA"
+                                           Margin="0,0,0,10"/>
+
+                                <CheckBox x:Name="chkMatchOrientation"
+                                          Content="Match Existing Orientation"
+                                          IsChecked="True"
+                                          Foreground="#C8C8E8"
+                                          FontFamily="Segoe UI"
+                                          FontSize="12"
+                                          Margin="0,0,0,8"/>
+
+                                <CheckBox x:Name="chkPreserveTitleBlockPosition"
+                                          Content="Preserve Title Block Position"
+                                          IsChecked="True"
+                                          Foreground="#C8C8E8"
+                                          FontFamily="Segoe UI"
+                                          FontSize="12"
+                                          Margin="0,0,0,8"/>
+
+                                <CheckBox x:Name="chkDryRun"
+                                          Content="Dry Run (Preview Only)"
+                                          Foreground="#C8C8E8"
+                                          FontFamily="Segoe UI"
+                                          FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Info Panel -->
+                        <Border Grid.Row="2"
+                                Background="#0A0A12"
+                                BorderBrush="#1976D2"
+                                BorderThickness="0.8"
+                                CornerRadius="6"
+                                Margin="16,0,16,16"
+                                Padding="14,12">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="ℹ️ INFORMATION"
+                                               FontSize="10"
+                                               FontFamily="Segoe UI"
+                                               FontWeight="Bold"
+                                               Foreground="#8888AA"
+                                               Margin="0,0,0,10"/>
+                                    <TextBlock TextWrapping="Wrap"
+                                               FontSize="11"
+                                               FontFamily="Segoe UI"
+                                               Foreground="#FFCDA2">
+                                        <Run Text="• Select new title block family and type"/>
+                                        <LineBreak/>
+                                        <Run Text="• Select sheets to update"/>
+                                        <LineBreak/>
+                                        <Run Text="• Click REPLACE TITLE BLOCKS"/>
+                                        <LineBreak/>
+                                        <Run Text="• Existing title blocks will be replaced"/>
+                                        <LineBreak/>
+                                        <Run Text="• Position can be maintained"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ══ RIGHT PANEL — SHEET SELECTION ══ -->
+                <Border Grid.Column="1"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Filter & Buttons -->
+                        <Border Grid.Row="0"
+                                Background="#0A0A12"
+                                BorderBrush="#1976D2"
+                                BorderThickness="0,0,0,0.8"
+                                Padding="16,14">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Filter -->
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="🔍 Filter:"
+                                               FontSize="12"
+                                               FontFamily="Segoe UI"
+                                               FontWeight="Bold"
+                                               Foreground="White"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                    <TextBox Grid.Column="1"
+                                             x:Name="txtSheetFilter"
+                                             Style="{StaticResource ModernTextBox}"
+                                             Height="34"
+                                             VerticalContentAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Buttons -->
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button x:Name="btnSelectAllSheets"
+                                            Grid.Column="0"
+                                            Content="Select All"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Width="100" Height="32"
+                                            Margin="0,0,8,0"/>
+                                    <Button x:Name="btnClearAllSheets"
+                                            Grid.Column="1"
+                                            Content="Clear All"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Width="100" Height="32"
+                                            Margin="0,0,8,0"/>
+                                    <Button x:Name="btnSelectFiltered"
+                                            Grid.Column="2"
+                                            Content="Select Filtered"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Width="120" Height="32"/>
+
+                                    <TextBlock x:Name="txtSheetCount"
+                                               Grid.Column="4"
+                                               Text="Selected: 0 / 0"
+                                               FontSize="11"
+                                               FontFamily="Segoe UI"
+                                               FontWeight="SemiBold"
+                                               Foreground="#1976D2"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <!-- Sheet List -->
+                        <Border Grid.Row="1"
+                                Background="#0A0A12"
+                                Margin="10">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl x:Name="lstSheets"
+                                                  Margin="6">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Content="{Binding DisplayText}"
+                                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                          Foreground="#C8C8E8"
+                                                          FontFamily="Segoe UI"
+                                                          FontSize="12"
+                                                          Margin="6,4"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                        </Border>
+
+                        <!-- Log Panel -->
+                        <Border Grid.Row="2"
+                                Background="#0A0A12"
+                                BorderBrush="#1976D2"
+                                BorderThickness="0,0.8,0,0"
+                                Padding="16,14"
+                                MinHeight="140">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0"
+                                           Text="REPLACEMENT LOG"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI"
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           Margin="0,0,0,10"/>
+
+                                <TextBox Grid.Row="1"
+                                         x:Name="txtLog"
+                                         Background="#0A0A14"
+                                         Foreground="#FFCDA2"
+                                         BorderThickness="0"
+                                         IsReadOnly="True"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"
+                                         FontFamily="Consolas"
+                                         FontSize="10"
+                                         Padding="8"
+                                         Text="Ready to replace title blocks..."/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ══════════════════════════════════════════
+                 ROW 3 — FOOTER
+            ══════════════════════════════════════════════ -->
+            <Border Grid.Row="3"
+                    Background="#0E0E1A"
+                    CornerRadius="0,0,12,12"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,1,0,0"
+                    Padding="16,0">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Status -->
+                    <TextBlock x:Name="txtStatus"
+                               Grid.Column="0"
+                               Text="Ready to replace title blocks on sheets"
+                               Foreground="#1976D2"
+                               FontFamily="Segoe UI"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+
+                    <!-- View Report -->
+                    <Button x:Name="btnViewReport"
+                            Grid.Column="1"
+                            Content="View Report"
+                            Style="{StaticResource SecondaryButton}"
+                            Width="130" Height="36"
+                            Margin="0,0,10,0"/>
+
+                    <!-- Replace -->
+                    <Button x:Name="btnReplace"
+                            Grid.Column="2"
+                            Content="REPLACE TITLE BLOCKS"
+                            Style="{StaticResource PrimaryButton}"
+                            Width="210" Height="36"/>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
+</Window>

@@ -75,6 +75,7 @@ class NWCExporterWindow(Window):
         self.btnBrowse = self._window.FindName("btnBrowse")
         self.txtFilename = self._window.FindName("txtFilename")
         self.chkUseProjectName = self._window.FindName("chkUseProjectName")
+        self.headerDragArea = self._window.FindName("headerDragArea")
         
         # Export options
         self.chkExportLinks = self._window.FindName("chkExportLinks")
@@ -93,6 +94,11 @@ class NWCExporterWindow(Window):
         # Initialize
         self.InitializeData()
         self.SetupEventHandlers()
+        self.headerDragArea.MouseLeftButtonDown += self.OnHeaderDrag
+
+    def OnHeaderDrag(self, sender, args):
+        """Allow window dragging from header"""
+        self._window.DragMove()
     
     def InitializeData(self):
         """Initialize controls with data"""

@@ -156,7 +156,8 @@ class SetCommentWindow(Window):
         self.cmbType = self._window.FindName("cmbType")
         self.txtElementCount = self._window.FindName("txtElementCount")
         self.txtElementInfo = self._window.FindName("txtElementInfo")
-        
+        self.headerDragArea = self._window.FindName("headerDragArea")
+
         # Method controls
         self.cmbMethod = self._window.FindName("cmbMethod")
         self.inputContainer = self._window.FindName("inputContainer")
@@ -217,7 +218,12 @@ class SetCommentWindow(Window):
         self.cmbMethod.SelectionChanged += self.OnMethodChanged
         self.btnPreview.Click += self.OnGeneratePreview
         self.btnApply.Click += self.OnApplyComments
-    
+        self.headerDragArea.MouseLeftButtonDown += self.OnHeaderDrag
+
+    def OnHeaderDrag(self, sender, args):
+        """Allow window dragging from header"""
+        self._window.DragMove()
+            
     def OnClose(self, sender, args):
         """Close window"""
         self._window.DialogResult = False

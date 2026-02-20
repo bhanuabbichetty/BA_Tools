@@ -1,0 +1,406 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="BA_Tools"
+        Width="900" Height="700"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
+    <Window.Resources>
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Width" Value="5"/>
+        </Style>
+        <Style TargetType="ScrollViewer">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1976D2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2196F3"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Background" Value="#1C1C2C"/>
+                                <Setter Property="Foreground" Value="#404055"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#22223A"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CloseButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1A2A"/>
+            <Setter Property="Foreground" Value="#A0A0C0"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="70"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1976D2"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#0A0A14"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="CaretBrush" Value="#FFFFFF"/>
+            <Setter Property="SelectionBrush" Value="#1976D2"/>
+        </Style>
+
+        <Style x:Key="ModernDatePicker" TargetType="DatePicker">
+            <Setter Property="Background" Value="#0A0A14"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="BorderThickness" Value="0.8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="6,4"/>
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#0A0A12" CornerRadius="12" BorderBrush="#0A0A12" BorderThickness="0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58"/>
+                <RowDefinition Height="26"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="64"/>
+            </Grid.RowDefinitions>
+
+            <!-- ══ TITLE BAR ══ -->
+            <Border x:Name="headerDragArea"
+                    Grid.Row="0"
+                    Background="#0E0E1A"
+                    CornerRadius="12,12,0,0"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="16,0,14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="#1976D2" CornerRadius="8"
+                            Width="42" Height="42" VerticalAlignment="Center">
+                        <TextBlock Text="BA" FontSize="18" FontWeight="Bold" Foreground="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Segoe UI"/>
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="TITLE BLOCK UPDATE"
+                               FontSize="18" FontWeight="Bold" Foreground="White"
+                               FontFamily="Segoe UI" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                    <Button x:Name="btnClose" Grid.Column="2" Content="Close"
+                            Style="{StaticResource CloseButton}" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- ══ SUBTITLE ══ -->
+            <TextBlock Grid.Row="1"
+                       Text="Batch update title block parameters across multiple sheets"
+                       FontSize="10" FontFamily="Segoe UI" Foreground="#FFCDA2"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            <!-- ══ MAIN CONTENT — two columns ══ -->
+            <Grid Grid.Row="2" Margin="16,8,16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="310"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ── LEFT: Sheet Selection ── -->
+                <Border Grid.Column="0"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        Padding="14,12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header + count -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="TARGET SHEETS"
+                                       FontSize="13" FontFamily="Segoe UI" FontWeight="Bold"
+                                       Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtSheetCount" Grid.Column="1"
+                                       Text="0 / 0 selected"
+                                       FontSize="11" FontFamily="Segoe UI" FontWeight="SemiBold"
+                                       Foreground="#1976D2" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Filter — name is txtSheetFilter (matches script) -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="🔍 Filter:"
+                                       FontSize="12" FontFamily="Segoe UI" FontWeight="Bold"
+                                       Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBox x:Name="txtSheetFilter" Grid.Column="1"
+                                     Style="{StaticResource ModernTextBox}"
+                                     Height="32" VerticalContentAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Select / Clear -->
+                        <StackPanel Grid.Row="4" Orientation="Horizontal">
+                            <Button x:Name="btnSelectAll" Content="Select All"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Width="100" Height="30" Margin="0,0,8,0"/>
+                            <Button x:Name="btnClearAll" Content="Clear All"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Width="100" Height="30"/>
+                        </StackPanel>
+
+                        <!-- Sheet list -->
+                        <Border Grid.Row="6"
+                                Background="#0A0A12"
+                                BorderBrush="#1E1E2E"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
+                                <ItemsControl x:Name="lstSheets" Margin="6">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Content="{Binding DisplayText}"
+                                                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                      Foreground="#C8C8E8"
+                                                      FontFamily="Segoe UI"
+                                                      FontSize="11"
+                                                      Margin="6,3"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ── RIGHT: Parameters ── -->
+                <Border Grid.Column="2"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        Padding="14,12">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
+                        <StackPanel>
+                            <TextBlock Text="PARAMETERS TO UPDATE"
+                                       FontSize="13" FontFamily="Segoe UI" FontWeight="Bold"
+                                       Foreground="White" Margin="0,0,0,14"/>
+
+                            <!-- Drawn By -->
+                            <TextBlock Text="Drawn By:" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtDrawnBy"
+                                     Style="{StaticResource ModernTextBox}"
+                                     Height="32" VerticalContentAlignment="Center"
+                                     Margin="0,0,0,10"/>
+
+                            <!-- Checked By -->
+                            <TextBlock Text="Checked By:" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtCheckedBy"
+                                     Style="{StaticResource ModernTextBox}"
+                                     Height="32" VerticalContentAlignment="Center"
+                                     Margin="0,0,0,10"/>
+
+                            <!-- Designed By -->
+                            <TextBlock Text="Designed By:" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtDesignedBy"
+                                     Style="{StaticResource ModernTextBox}"
+                                     Height="32" VerticalContentAlignment="Center"
+                                     Margin="0,0,0,10"/>
+
+                            <!-- Approved By -->
+                            <TextBlock Text="Approved By:" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtApprovedBy"
+                                     Style="{StaticResource ModernTextBox}"
+                                     Height="32" VerticalContentAlignment="Center"
+                                     Margin="0,0,0,10"/>
+
+                            <!-- Project Number -->
+                            <TextBlock Text="Project Number:" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtProjectNumber"
+                                     Style="{StaticResource ModernTextBox}"
+                                     Height="32" VerticalContentAlignment="Center"
+                                     Margin="0,0,0,10"/>
+
+                            <!-- Project Name -->
+                            <TextBlock Text="Project Name:" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtProjectName"
+                                     Style="{StaticResource ModernTextBox}"
+                                     Height="32" VerticalContentAlignment="Center"
+                                     Margin="0,0,0,10"/>
+
+                            <!-- Sheet Issue Date -->
+                            <TextBlock Text="Sheet Issue Date:" Style="{StaticResource FieldLabel}"/>
+                            <DatePicker x:Name="datePicker"
+                                        Style="{StaticResource ModernDatePicker}"
+                                        Height="32"
+                                        Margin="0,0,0,14"/>
+
+                            <!-- Divider -->
+                            <Rectangle Fill="#1976D2" Height="1" Opacity="0.3" Margin="0,0,0,12"/>
+
+                            <!-- Clear Fields -->
+                            <Button x:Name="btnClearFields"
+                                    Content="CLEAR FIELDS"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Height="32"/>
+
+                            <!-- Info card -->
+                            <Border Background="#0A0A12"
+                                    BorderBrush="#1976D2"
+                                    BorderThickness="0.8"
+                                    CornerRadius="6"
+                                    Padding="12,10"
+                                    Margin="0,12,0,4">
+                                <StackPanel>
+                                    <TextBlock Text="ℹ  How it works"
+                                               Foreground="#1976D2"
+                                               FontFamily="Segoe UI"
+                                               FontWeight="SemiBold"
+                                               FontSize="10"
+                                               Margin="0,0,0,6"/>
+                                    <TextBlock TextWrapping="Wrap"
+                                               Foreground="#FFCDA2"
+                                               FontFamily="Segoe UI"
+                                               FontSize="9"
+                                               LineHeight="14">
+                                        <Run>Fill in only the fields you want to update — empty fields are ignored.</Run>
+                                        <LineBreak/><LineBreak/>
+                                        <Run Foreground="#FFCDA2" FontWeight="Bold">Note:</Run>
+                                        <Run> Parameters are looked up on the title block first, then on the sheet.</Run>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <!-- ══ FOOTER ══ -->
+            <Border Grid.Row="3"
+                    Background="#0E0E1A"
+                    CornerRadius="0,0,12,12"
+                    BorderBrush="#1976D2"
+                    BorderThickness="0,1,0,0"
+                    Padding="16,0">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="txtStatus"
+                               Grid.Column="0"
+                               Text="Ready to update title blocks"
+                               Foreground="#1976D2"
+                               FontFamily="Segoe UI"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+
+                    <Button x:Name="btnCancel"
+                            Grid.Column="1"
+                            Content="CANCEL"
+                            Style="{StaticResource SecondaryButton}"
+                            Width="100" Height="36"/>
+
+                    <Button x:Name="btnUpdate"
+                            Grid.Column="3"
+                            Content="UPDATE TITLE BLOCKS"
+                            Style="{StaticResource PrimaryButton}"
+                            Width="200" Height="36"/>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
+</Window>

@@ -83,6 +83,7 @@ class TransferFiltersWindow(Window):
         # Get controls
         self.imgLogo = self._window.FindName("imgLogo")
         self.btnClose = self._window.FindName("btnClose")
+        self.headerDragArea = self._window.FindName("headerDragArea")
         
         # Left panel
         self.cmbCopyFrom = self._window.FindName("cmbCopyFrom")
@@ -105,6 +106,11 @@ class TransferFiltersWindow(Window):
         self.LoadLogo()
         self.LoadProjects()
         self.SetupEventHandlers()
+        self.headerDragArea.MouseLeftButtonDown += self.OnHeaderDrag
+
+    def OnHeaderDrag(self, sender, args):
+        """Allow window dragging from header"""
+        self._window.DragMove()
     
     def LoadLogo(self):
         """Load BA logo"""
@@ -351,7 +357,7 @@ class TransferFiltersWindow(Window):
         self.btnSelectAll.Click += self.OnSelectAll
         self.btnSelectNone.Click += self.OnSelectNone
         self.btnTransfer.Click += self.OnTransfer
-        self.lstFilters.SelectionChanged += self.OnFilterSelectionChanged
+        self.lstFilters.PreviewMouseLeftButtonUp += self.OnFilterClicked
     
     def OnClose(self, sender, args):
         self._window.Close()
@@ -403,7 +409,10 @@ class TransferFiltersWindow(Window):
     def OnTransfer(self, sender, args):
         self.TransferFilters()
     
-    def OnFilterSelectionChanged(self, sender, args):
+    def OnFilterClicked(self, sender, args):
+        """Called on any mouse-up in the filters list.
+        TwoWay binding has already written the new IsSelected value by this point,
+        so scheduling UpdateSelectedCount via the dispatcher picks up the correct state."""
         self._window.Dispatcher.BeginInvoke(
             System.Windows.Threading.DispatcherPriority.Background,
             System.Action(self.UpdateSelectedCount)

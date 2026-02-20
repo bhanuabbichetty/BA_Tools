@@ -219,6 +219,7 @@ class AssemblyCreationWindow(Window):
         self.txtStatus = self._window.FindName("txtStatus")
         self.txtHostedInfo = self._window.FindName("txtHostedInfo")
         self.btnCreateAssemblies = self._window.FindName("btnCreateAssemblies")
+        self.headerDragArea = self._window.FindName("headerDragArea")
         
         # Store original comment list
         self.all_comment_groups = []
@@ -227,6 +228,11 @@ class AssemblyCreationWindow(Window):
         self.LoadLogo()
         self.LoadComments()
         self.SetupEventHandlers()
+        self.headerDragArea.MouseLeftButtonDown += self.OnHeaderDrag
+
+    def OnHeaderDrag(self, sender, args):
+        """Allow window dragging from header"""
+        self._window.DragMove()
         
         # Disable Create button initially
         self.btnCreateAssemblies.IsEnabled = False
