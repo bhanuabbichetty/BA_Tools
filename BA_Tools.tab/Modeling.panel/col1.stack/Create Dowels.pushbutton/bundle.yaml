@@ -1,0 +1,54 @@
+title: "Create Dowels"
+tooltip: |
+  Version = 1.0
+  Date    = 25.02.2026
+  __________________________________
+  Description:
+
+  Places dowel family instances automatically
+  along a selected wall face using user-defined
+  offsets, spacing, height, and rotation control.
+
+  - Place dowels between configurable left and right offsets.
+  - Control spacing / interval distribution along face width.
+  - Define vertical height from bottom reference.
+  - Apply rotation offset (degrees) if required.
+  - Supports face-based placement.
+  - Real-time placement preview workflow.
+  - Batch-ready logic for future multi-face support.
+  __________________________________
+  Placement Logic:
+
+  - Dowels are distributed from Left Offset to Right Offset.
+  - Placement interval follows Spacing value.
+  - Height is measured from bottom of selected face.
+  - Rotation offset applies around insertion axis.
+  - Orientation follows picked face normal.
+  __________________________________
+  How-to:
+
+  -> Click the pushbutton.
+  -> Select required Family and Type.
+  -> Enter Left & Right Offsets (mm).
+  -> Define Spacing / Interval (mm).
+  -> Enter Height from Bottom (mm).
+  -> Optional: Set Rotation Offset (degrees).
+  -> Click "PICK FACE & PLACE".
+  -> Select wall face to generate dowels.
+  -> Review output summary.
+  __________________________________
+  Notes:
+
+  - Only face-based families are supported.
+  - Ensure correct host category before placement.
+  - Negative offsets may reverse distribution direction.
+  - Rotation applies after face alignment.
+  __________________________________
+  Last update:
+  - [25.02.2026] - 1.0 RELEASE
+
+  Bundle Name:
+  Dowel Placer (pushbutton)
+
+  Author(s):
+  Bhanu Prakash A
