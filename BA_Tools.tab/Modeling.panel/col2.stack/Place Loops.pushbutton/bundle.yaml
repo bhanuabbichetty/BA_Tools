@@ -1,0 +1,76 @@
+title: "Place Loops"
+
+tooltip: |
+  Version = 1.0
+  Date    = 26.02.2026
+  __________________________________
+  Description:
+
+  Automatically places reinforcement 
+  loop family instances on selected 
+  wall faces or end edges based on 
+  defined placement condition.
+
+  - Supports placement on wall end faces.
+  - Supports placement on wall long face.
+  - Mixed placement option available.
+  - Groove height auto-calculated from 
+    wall height.
+  - Elevation offset from base level.
+  - Single instance per computed position.
+  - Interior / Exterior face offset supported.
+  __________________________________
+  Placement Conditions:
+
+  CONDITION 1 — Both End Faces
+  - One loop placed vertically on 
+    each wall end face.
+  - Inset controls placement from edge.
+
+  CONDITION 2 — Both on Face
+  - Loops distributed along long face.
+  - Controlled using spacing value.
+
+  CONDITION 3 — Mixed
+  - One loop on edge.
+  - One loop on long face.
+  __________________________________
+  Placement Logic:
+
+  - Groove Height = Wall Height 
+    - Elevation from Level.
+  - Wall direction used as 
+    reference vector.
+  - Placement orientation follows 
+    picked host face normal.
+  - Offset moves instance inward 
+    from outer wall edge.
+  - Transform maintained for 
+    Assembly creation workflow.
+  __________________________________
+
+  How-to:
+  -> Click the pushbutton.
+  -> Select required Loop Family.
+  -> Choose placement condition.
+  -> Enter inset / spacing values.
+  -> Define elevation from level.
+  -> Click "PLACE LOOPS".
+  -> Select target wall.
+  -> Review output summary.
+  __________________________________
+
+  Notes:
+  - Only face-based families supported.
+  - Groove Height is set automatically.
+  - Incorrect host may affect orientation.
+  - Required for Assembly detailing.
+  __________________________________
+  last update:
+  - [26.02.2026] - 1.0 RELEASE
+
+Bundle Name:
+  Loop Placer (pushbutton)
+
+author(s):
+  Bhanu Prakash A

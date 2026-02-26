@@ -1,0 +1,59 @@
+title: "Place Erection Marks"
+
+tooltip: |
+  Version = 1.0
+  Date    = 26.02.2026
+  __________________________________
+  Description:
+
+  Automatically places erection mark 
+  family instances on selected wall 
+  faces with correct host alignment 
+  and orientation control.
+
+  - Places face-based erection marks 
+    on exterior or interior wall faces.
+  - Aligns family orientation to wall 
+    longitudinal direction.
+  - Maintains correct facing based on 
+    picked face normal.
+  - Supports offset placement from 
+    wall edges.
+  - Ensures stable instance transform 
+    for downstream Assembly creation.
+  - Compatible with Assembly Origin 
+    rotation logic.
+  __________________________________
+  Placement Logic:
+
+  - Family is hosted to selected wall face.
+  - Reference direction follows wall axis.
+  - Family X-axis aligns with wall direction.
+  - Family Y-axis aligns to face normal.
+  - Instance transform is preserved 
+    for accurate Assembly rotation.
+  __________________________________
+  How-to:
+
+  -> Click the pushbutton.
+  -> Select required Erection Mark Family.
+  -> Pick target wall face.
+  -> Placement will follow wall direction.
+  -> Review output summary.
+  __________________________________
+  Notes:
+
+  - Only face-based families supported.
+  - Placement uses wall direction 
+    as reference vector.
+  - Avoid non-hosted families.
+  - Required for Assembly orientation.
+  __________________________________
+  last update:
+  - [26.02.2026] - 1.0 RELEASE
+
+Bundle Name:
+  Erection Mark Placer (pushbutton)
+
+author(s):
+  Bhanu Prakash A
