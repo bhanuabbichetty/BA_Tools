@@ -59,6 +59,27 @@ def safe_float(text, default=0.0):
         return default
 
 
+def set_family_parameter(instance, param_name, value_mm):
+    """
+    Set a family instance parameter by name.
+    value_mm is in millimeters, will be converted to feet for length parameters.
+    """
+    try:
+        param = instance.LookupParameter(param_name)
+        if param and not param.IsReadOnly:
+            if param.StorageType == StorageType.Double:
+                # Convert mm to feet for length parameters
+                value_ft = value_mm / 304.8
+                param.Set(value_ft)
+                return True
+            elif param.StorageType == StorageType.Integer:
+                param.Set(int(value_mm))
+                return True
+        return False
+    except:
+        return False
+
+
 def get_all_loadable_families():
     """Return dict  {family_name: Family element}  for all loadable families."""
     return {
@@ -227,7 +248,8 @@ def calculate_dowel_positions(face, wall, left_off_mm, right_off_mm,
 
 
 def place_dowels_on_face(face, face_ref, wall, symbol,
-                          positions, rotation_deg=0.0):
+                          positions, rotation_deg=0.0, model_props=None,
+                          elevation_from_level_mm=0.0):
     """
     Place the FamilySymbol at each XYZ position on the face.
 
@@ -327,8 +349,9 @@ def place_dowels_on_face(face, face_ref, wall, symbol,
                     except Exception:
                         pass
 
-            # Force Elevation from Level to 0 so instance sits at level datum.
+            # Set Elevation from Level to the user-supplied value.
             if instance:
+                elev_ft = elevation_from_level_mm / 304.8
                 for bip in [
                     BuiltInParameter.INSTANCE_ELEVATION_PARAM,
                     BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM
@@ -336,9 +359,27 @@ def place_dowels_on_face(face, face_ref, wall, symbol,
                     try:
                         p = instance.get_Parameter(bip)
                         if p and (not p.IsReadOnly):
-                            p.Set(0.0)
+                            p.Set(elev_ft)
                     except Exception:
                         pass
+
+            # Set Model Properties parameters if provided
+            if instance and model_props:
+                try:
+                    set_family_parameter(instance, "Dowel Offset", model_props.get("dowel_offset", 100.0))
+                    set_family_parameter(instance, "Gap @ Top", model_props.get("gap_top", 100.0))
+                    
+                    # Try both possible names for C/P Joint Distance
+                    cp_joint = model_props.get("cp_joint_distance", 150.0)
+                    if not set_family_parameter(instance, "C/P Joint Distance", cp_joint):
+                        set_family_parameter(instance, "CIP/Joint Distance", cp_joint)
+                    
+                    set_family_parameter(instance, "Embedded Bar Depth", model_props.get("embedded_depth", 800.0))
+                    set_family_parameter(instance, "Embedded Bar Depth (X-Dir)", model_props.get("embedded_x", 500.0))
+                    set_family_parameter(instance, "Embedded Bar Depth (Y-Dir)", model_props.get("embedded_y", 300.0))
+                except Exception as e:
+                    # Silently continue if parameter setting fails
+                    pass
 
             if instance:
                 placed.append(instance)
@@ -378,6 +419,14 @@ class DowelPlacerWindow(object):
         self.txtSpacing        = self._window.FindName("txtSpacing")
         self.txtVerticalOffset = self._window.FindName("txtVerticalOffset")
         self.txtRotation       = self._window.FindName("txtRotation")
+
+        # Model Properties Parameters
+        self.txtDowelOffset       = self._window.FindName("txtDowelOffset")
+        self.txtGapTop            = self._window.FindName("txtGapTop")
+        self.txtCPJointDistance   = self._window.FindName("txtCPJointDistance")
+        self.txtEmbeddedBarDepth  = self._window.FindName("txtEmbeddedBarDepth")
+        self.txtEmbeddedDepthX    = self._window.FindName("txtEmbeddedDepthX")
+        self.txtEmbeddedDepthY    = self._window.FindName("txtEmbeddedDepthY")
 
         self.txtSelectedFamily = self._window.FindName("txtSelectedFamily")
         self.txtSelectedType   = self._window.FindName("txtSelectedType")
@@ -595,6 +644,16 @@ class DowelPlacerWindow(object):
         placed_list = []
         failed_list = []
 
+        # Gather Model Properties parameters
+        model_props = {
+            "dowel_offset": safe_float(self.txtDowelOffset.Text if self.txtDowelOffset else "", 100.0),
+            "gap_top": safe_float(self.txtGapTop.Text if self.txtGapTop else "", 100.0),
+            "cp_joint_distance": safe_float(self.txtCPJointDistance.Text if self.txtCPJointDistance else "", 150.0),
+            "embedded_depth": safe_float(self.txtEmbeddedBarDepth.Text if self.txtEmbeddedBarDepth else "", 800.0),
+            "embedded_x": safe_float(self.txtEmbeddedDepthX.Text if self.txtEmbeddedDepthX else "", 500.0),
+            "embedded_y": safe_float(self.txtEmbeddedDepthY.Text if self.txtEmbeddedDepthY else "", 300.0),
+        }
+
         with Transaction(doc, "Place Dowels on Wall Face") as t:
             t.Start()
             try:
@@ -603,7 +662,9 @@ class DowelPlacerWindow(object):
                         face, ref, wall,
                         self.selected_symbol,
                         positions,
-                        rot_deg
+                        rot_deg,
+                        model_props,
+                        v_off_mm
                     )
                     placed_list.extend(p_list)
                     failed_list.extend(f_list)

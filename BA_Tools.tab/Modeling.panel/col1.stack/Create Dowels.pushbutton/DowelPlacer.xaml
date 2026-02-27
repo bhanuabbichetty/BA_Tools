@@ -1,7 +1,7 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="BA_Tools"
-        Width="960" Height="700"
+        Width="1200" Height="700"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         WindowStyle="None"
@@ -198,6 +198,8 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="12"/>
                     <ColumnDefinition Width="220"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="220"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- ── COLUMN 0: Family Selection ── -->
@@ -368,10 +370,10 @@
                                  Height="34" Text="300"
                                  Margin="0,0,0,10"/>
 
-                        <!-- Vertical Offset -->
+                        <!-- Elevation from Level -->
                         <TextBlock Style="{StaticResource FieldLabel}">
                             <Run Foreground="#81C784">↑</Run>
-                            <Run Text=" Height from Bottom of Face (mm)"/>
+                            <Run Text=" Elevation from Level (mm)"/>
                         </TextBlock>
                         <TextBox x:Name="txtVerticalOffset"
                                  Style="{StaticResource DarkTextBox}"
@@ -499,6 +501,61 @@
                             </StackPanel>
                         </Border>
                     </StackPanel>
+                </Border>
+
+                <!-- ── COLUMN 6: Model Properties ── -->
+                <Border Grid.Column="6"
+                        Background="#0E0E1A"
+                        CornerRadius="8"
+                        BorderBrush="#1976D2"
+                        BorderThickness="0.8"
+                        Padding="14,14">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="MODEL PROPERTIES" Style="{StaticResource SectionLabel}"/>
+                            
+                            <!-- Dowel Offset -->
+                            <TextBlock Text="Dowel Offset (mm)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtDowelOffset"
+                                     Style="{StaticResource DarkTextBox}"
+                                     Height="34" Text="100.0"
+                                     Margin="0,0,0,10"/>
+                            
+                            <!-- Gap @ Top -->
+                            <TextBlock Text="Gap @ Top (mm)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtGapTop"
+                                     Style="{StaticResource DarkTextBox}"
+                                     Height="34" Text="100.0"
+                                     Margin="0,0,0,10"/>
+                            
+                            <!-- C/P Joint Distance -->
+                            <TextBlock Text="C/P Joint Distance (mm)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtCPJointDistance"
+                                     Style="{StaticResource DarkTextBox}"
+                                     Height="34" Text="150.0"
+                                     Margin="0,0,0,10"/>
+                            
+                            <!-- Embedded Bar Depth -->
+                            <TextBlock Text="Embedded Bar Depth (mm)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtEmbeddedBarDepth"
+                                     Style="{StaticResource DarkTextBox}"
+                                     Height="34" Text="800.0"
+                                     Margin="0,0,0,10"/>
+                            
+                            <!-- Embedded Bar Depth (X-Dir) -->
+                            <TextBlock Text="Embedded Depth X-Dir (mm)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtEmbeddedDepthX"
+                                     Style="{StaticResource DarkTextBox}"
+                                     Height="34" Text="500.0"
+                                     Margin="0,0,0,10"/>
+                            
+                            <!-- Embedded Bar Depth (Y-Dir) -->
+                            <TextBlock Text="Embedded Depth Y-Dir (mm)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="txtEmbeddedDepthY"
+                                     Style="{StaticResource DarkTextBox}"
+                                     Height="34" Text="300.0"/>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Border>
 
             </Grid>
