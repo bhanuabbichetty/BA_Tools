@@ -86,6 +86,144 @@ def get_wall_base_level_elevation(wall):
     return 0.0
 
 
+def wall_has_openings(wall):
+    """Check if wall has any door or window openings."""
+    try:
+        inserts = wall.FindInserts(True, True, True, True)
+        return inserts and inserts.Size > 0
+    except Exception:
+        return False
+
+
+def get_wall_face_boundary_and_place(wall, height_mm, face_side):
+    """
+    Place erection mark at the horizontal centre of the wall face at the
+    requested height.
+
+    Opening-avoidance logic (vertical axis only — host is never lost):
+    1.  For every insert (door/window/opening) in the wall, project the
+        wall's horizontal midpoint onto the wall-direction axis and check
+        whether it falls inside the insert's horizontal span.
+    2.  If it does AND the requested height Z falls inside the insert's
+        Z range → the mark would land in the void and lose its host.
+        In that case, move the placement point 100 mm above the insert top.
+        If multiple openings overlap the centre, take the highest top.
+    3.  Otherwise place at the original requested height.
+
+    Returns (XYZ placement_pt, Reference face_ref).
+    """
+    CLEAR_MM = 100.0
+
+    try:
+        # ── Face reference ────────────────────────────────────────────────
+        shell_type = ShellLayerType.Exterior if face_side == "Exterior" \
+                     else ShellLayerType.Interior
+        side_refs  = HostObjectUtils.GetSideFaces(wall, shell_type)
+        if not side_refs or len(side_refs) == 0:
+            return None, None
+
+        face_ref = side_refs[0]
+        face_obj = wall.GetGeometryObjectFromReference(face_ref)
+        if not isinstance(face_obj, Face):
+            return None, None
+
+        # ── Wall geometry ─────────────────────────────────────────────────
+        loc = wall.Location
+        if not isinstance(loc, LocationCurve):
+            return None, None
+
+        curve      = loc.Curve
+        wall_start = curve.GetEndPoint(0)
+        wall_end   = curve.GetEndPoint(1)
+        wall_dir   = (wall_end - wall_start).Normalize()
+        mid_pt     = curve.Evaluate(0.5, True)
+
+        orient     = wall.Orientation
+        if face_side == "Interior":
+            orient = orient.Negate()
+        half_width = wall.Width / 2.0
+
+        face_x = mid_pt.X + orient.X * half_width
+        face_y = mid_pt.Y + orient.Y * half_width
+
+        base_elev  = get_wall_base_level_elevation(wall)
+        height_ft  = height_mm / 304.8
+        target_z   = base_elev + height_ft
+        clear_ft   = CLEAR_MM / 304.8
+        tol_ft     = 5.0 / 304.8   # 5 mm tolerance
+
+        # ── Check every insert ────────────────────────────────────────────
+        adjusted_z = target_z
+
+        try:
+            inserts = wall.FindInserts(True, True, True, True)
+        except Exception:
+            inserts = []
+
+        # inserts is a Python list-like in IronPython — use len(), not .Size
+        if inserts and len(inserts) > 0:
+            for insert_id in inserts:
+                try:
+                    insert = doc.GetElement(insert_id)
+                    if insert is None:
+                        continue
+
+                    bbox = insert.get_BoundingBox(None)
+                    if bbox is None:
+                        continue
+
+                    # ── Project onto wall axis ────────────────────────────
+                    # Scalar offset of wall midpoint from wall start
+                    mid_offset = (mid_pt - wall_start).DotProduct(wall_dir)
+
+                    # Scalar offset of insert bbox centre from wall start
+                    ins_ctr_2d = XYZ(
+                        (bbox.Min.X + bbox.Max.X) * 0.5,
+                        (bbox.Min.Y + bbox.Max.Y) * 0.5,
+                        0.0
+                    )
+                    start_2d   = XYZ(wall_start.X, wall_start.Y, 0.0)
+                    ins_offset = (ins_ctr_2d - start_2d).DotProduct(wall_dir)
+
+                    # Half-span of insert along wall direction
+                    ins_half   = max(
+                        abs(bbox.Max.X - bbox.Min.X),
+                        abs(bbox.Max.Y - bbox.Min.Y)
+                    ) * 0.5
+
+                    # 1. Horizontal check: wall centre inside insert span?
+                    if abs(mid_offset - ins_offset) > (ins_half + tol_ft):
+                        continue
+
+                    # 2. Vertical check: target Z inside insert Z range?
+                    if not ((bbox.Min.Z - tol_ft) <= target_z <= (bbox.Max.Z + tol_ft)):
+                        continue
+
+                    # Both overlap → raise above insert top
+                    candidate_z = bbox.Max.Z + clear_ft
+                    if candidate_z > adjusted_z:
+                        adjusted_z = candidate_z
+                        output.print_md(
+                            "  Wall {} — opening at centre (insert ID {}), "
+                            "raised {:.0f} mm above opening top".format(
+                                wall.Id.IntegerValue,
+                                insert_id.IntegerValue,
+                                CLEAR_MM
+                            )
+                        )
+
+                except Exception:
+                    continue
+
+        placement_pt = XYZ(face_x, face_y, adjusted_z)
+        return placement_pt, face_ref
+
+    except Exception as e:
+        output.print_md("⚠ Wall {} placement error: {}".format(
+            wall.Id.IntegerValue, str(e)))
+        return None, None
+
+
 def calculate_side_placement(wall, height_mm, face_side):
     """
     Return (XYZ placement_point, Reference face_ref) for the requested side face.
@@ -435,42 +573,81 @@ class ErectionMarkPlacerWindow(object):
 
             for wall in self.selected_walls:
                 try:
-                    pt, face_ref = calculate_side_placement(wall, height_mm, face_side)
-
-                    if pt is None or face_ref is None:
-                        failed_ids.append(wall.Id.IntegerValue)
-                        continue
-
-                    # ── Resolve wall longitudinal direction ───────────────
-                    # This is used as refDir in NewFamilyInstance so that the
-                    # face-hosted family's local X axis aligns with the wall.
-                    # Downstream code (assembly rotation, angle queries) then
-                    # reads a consistent orientation — matching a manually
-                    # placed instance on the same face.
-                    loc_curve = wall.Location
-                    if not isinstance(loc_curve, LocationCurve):
-                        output.print_md("⚠ Wall {} — no location curve for refDir, skipping".format(
+                    # Use boundary-based placement with intersection detection
+                    pt, face_ref = get_wall_face_boundary_and_place(wall, height_mm, face_side)
+                    
+                    if pt is None:
+                        output.print_md("⚠ Wall {} — boundary placement failed".format(
                             wall.Id.IntegerValue))
                         failed_ids.append(wall.Id.IntegerValue)
                         continue
 
-                    wall_curve = loc_curve.Curve
-                    wall_dir   = (wall_curve.GetEndPoint(1) -
-                                  wall_curve.GetEndPoint(0)).Normalize()
+                    # Get wall base level
+                    base_level = None
+                    try:
+                        bp = wall.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT)
+                        if bp:
+                            wlvl_id = bp.AsElementId()
+                            if wlvl_id != ElementId.InvalidElementId:
+                                base_level = doc.GetElement(wlvl_id)
+                    except:
+                        pass
+                    
+                    if base_level is None:
+                        try:
+                            base_level = doc.GetElement(wall.LevelId)
+                        except:
+                            pass
+                    
+                    if base_level is None:
+                        output.print_md("⚠ Wall {} — no level found".format(wall.Id.IntegerValue))
+                        failed_ids.append(wall.Id.IntegerValue)
+                        continue
 
-                    # ── Face-hosted placement via Reference ───────────────
-                    # NewFamilyInstance(Reference, XYZ origin, XYZ refDir, FamilySymbol)
-                    # refDir = wall longitudinal direction (NOT world-up XYZ(0,0,1)).
-                    # Using world-up caused the family's internal X axis to be
-                    # misaligned with the wall, so angle extraction returned
-                    # wrong values.  Passing wall_dir fixes this and makes
-                    # programmatic placement identical to manual placement.
-                    instance = doc.Create.NewFamilyInstance(
-                        face_ref,
-                        pt,
-                        wall_dir,        # ✅ wall longitudinal direction as refDir
-                        selected_symbol
-                    )
+                    # Get wall direction for refDir
+                    loc_curve = wall.Location
+                    if not isinstance(loc_curve, LocationCurve):
+                        output.print_md("⚠ Wall {} — no location curve".format(wall.Id.IntegerValue))
+                        failed_ids.append(wall.Id.IntegerValue)
+                        continue
+
+                    wall_curve = loc_curve.Curve
+                    wall_dir = (wall_curve.GetEndPoint(1) - wall_curve.GetEndPoint(0)).Normalize()
+
+                    instance = None
+                    
+                    # Try face-based placement first
+                    if face_ref:
+                        try:
+                            instance = doc.Create.NewFamilyInstance(
+                                face_ref, pt, wall_dir, selected_symbol
+                            )
+                        except Exception as e:
+                            instance = None
+                    
+                    # Try wall-hosted placement
+                    if instance is None:
+                        try:
+                            instance = doc.Create.NewFamilyInstance(
+                                pt, selected_symbol, wall, base_level, StructuralType.NonStructural
+                            )
+                        except Exception as e:
+                            instance = None
+                    
+                    # Try level-based placement
+                    if instance is None:
+                        try:
+                            instance = doc.Create.NewFamilyInstance(
+                                pt, selected_symbol, base_level, StructuralType.NonStructural
+                            )
+                        except Exception as e:
+                            instance = None
+
+                    if instance is None:
+                        output.print_md("⚠ All placement methods failed for wall {}".format(
+                            wall.Id.IntegerValue))
+                        failed_ids.append(wall.Id.IntegerValue)
+                        continue
 
                     # ── Assign wall base level to erection mark instance ──
                     try:
