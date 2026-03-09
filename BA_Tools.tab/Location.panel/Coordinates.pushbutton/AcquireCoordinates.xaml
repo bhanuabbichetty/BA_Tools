@@ -1,7 +1,7 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="BA_Tools"
-        Width="600" Height="760"
+        Width="650" Height="760"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         WindowStyle="None"
@@ -194,7 +194,7 @@
             ══════════════════════════════════════════════ -->
             <TextBlock Grid.Row="1"
                        Text="Match coordinates from linked models"
-                       FontSize="10"
+                       FontSize="12"
                        FontFamily="Segoe UI"
                        Foreground="#FFCDA2"
                        HorizontalAlignment="Center"

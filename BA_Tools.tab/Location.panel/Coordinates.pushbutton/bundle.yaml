@@ -1,7 +1,31 @@
 title: "Coordinates"
 tooltip: |
-  set coordinates.
+  Version = 1.0
+  Date    = 09.03.2026
+  ____________________________________
+  Description:
+  
+  Acquire survey and project base coordinates from the selected linked model 
+  and apply them to the current model. Supports both visual positioning 
+  and exact coordinate acquisition if linked model has non-zero coordinates.
+  ____________________________________
+  How-to:
+  -> Click on the button
+  -> Select a linked model from the list
+  -> Verify the preview of Survey Point / Project Base coordinates
+  -> Click "Acquire from Selected" to apply coordinates to your model
+  -> Use "Refresh" to update linked model coordinates if needed
 
-  Press "Esc" to finalize the process
+  Notes:
+  - Works best when linked model is properly positioned.
+  - Current model coordinates will be updated immediately.
+  - Press "Esc" to cancel selection or operation.
+  ____________________________________
+  Last update:
+  - [09.03.2026] - 1.0 RELEASE
+  ____________________________________
+Bundle Name:
+  Coordinate Acquisition (pushbutton)
 
-  Author: Bhanu Prakash A
+author: Bhanu Prakash A
+context: doc-project
