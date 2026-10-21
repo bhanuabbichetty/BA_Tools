@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__title__ = "Assembly Views\nCreator"
+__title__ = "Views"
 __author__ = "Bhanu Prakash A"
 __doc__ = """Create assembly views, production sheet layout, view templates,
 viewport types, and revisions for selected assemblies."""

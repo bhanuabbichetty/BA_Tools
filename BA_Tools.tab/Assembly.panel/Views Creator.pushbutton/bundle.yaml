@@ -1,4 +1,4 @@
-name: Views Creator
+name: Views
 bundle_type: PushButton
 tooltip: >
   Create assembly views, place them on a production sheet layout,
