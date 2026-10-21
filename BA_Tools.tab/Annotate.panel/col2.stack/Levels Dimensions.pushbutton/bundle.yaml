@@ -1,0 +1,10 @@
+name: Levels Dimensions
+bundle_type: PushButton
+tooltip: >
+  Dimension levels and control level bubbles on the chosen sides
+  (left / right) for the current elevation/section or several
+  views at once, with a selectable dimension style and 2D/3D
+  level extent.
+author: Bhanu Prakash A
+min_revit_ver: 2019
+max_revit_ver: 2026

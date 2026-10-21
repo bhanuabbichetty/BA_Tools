@@ -1,0 +1,6 @@
+title: Linked Wall Voids
+tooltip: Select walls and create exact instance-sized voids from both electrical and HVAC links, including both wall cut-out family names.
+author: NCP Automation
+context: doc-project
+engine:
+  clean: true

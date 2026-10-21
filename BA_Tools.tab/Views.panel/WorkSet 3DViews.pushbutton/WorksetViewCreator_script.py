@@ -67,17 +67,15 @@ class WorksetItem(INotifyPropertyChanged):
     def __init__(self, workset, all_worksets):
         self.Workset = workset
         self.AllWorksets = all_worksets
-        self.Name = workset.Name
-        self.ViewName = workset.Name
+        self.Name = workset.Name          # read-only workset name (never changes)
+        self._view_name = ""              # blank by default — user types their own name
         self._is_selected = False
         self._property_changed = None
         
-        # Check if view already exists
-        if self.ViewName in all_view_names:
-            self.Status = "Already Exists"
-        else:
-            self.Status = "Ready to Create"
+        # Set initial status
+        self._refresh_status()
     
+    # ── IsSelected ────────────────────────────────────────────────────
     @property
     def IsSelected(self):
         return self._is_selected
@@ -87,17 +85,53 @@ class WorksetItem(INotifyPropertyChanged):
         if self._is_selected != value:
             self._is_selected = value
             self.OnPropertyChanged("IsSelected")
-    
+
+    # ── ViewName (editable — bound to the new column) ─────────────────
+    @property
+    def ViewName(self):
+        return self._view_name
+
+    @ViewName.setter
+    def ViewName(self, value):
+        # Keep whatever the user typed — including empty string
+        clean = (value or "").strip()
+        if self._view_name != clean:
+            self._view_name = clean
+            self._refresh_status()
+            self.OnPropertyChanged("ViewName")
+            self.OnPropertyChanged("Status")
+
+    # ── Status (derived — read-only) ──────────────────────────────────
+    @property
+    def Status(self):
+        return self._status
+
+    @Status.setter
+    def Status(self, value):
+        self._status = value
+        self.OnPropertyChanged("Status")
+
+    def _refresh_status(self):
+        """
+        Re-evaluate status.
+        - If ViewName is blank  → will fall back to workset name at creation time,
+          so check the workset name against existing views.
+        - If ViewName is filled → check that custom name against existing views.
+        """
+        effective_name = self._view_name if self._view_name else self.Name
+        if effective_name in all_view_names:
+            self._status = "Already Exists"
+        else:
+            self._status = "Ready to Create"
+
+    # ── INotifyPropertyChanged ────────────────────────────────────────
     def add_PropertyChanged(self, handler):
-        """Add PropertyChanged event handler"""
         self._property_changed = System.Delegate.Combine(self._property_changed, handler)
     
     def remove_PropertyChanged(self, handler):
-        """Remove PropertyChanged event handler"""
         self._property_changed = System.Delegate.Remove(self._property_changed, handler)
     
     def OnPropertyChanged(self, property_name):
-        """Raise PropertyChanged event"""
         if self._property_changed:
             args = PropertyChangedEventArgs(property_name)
             self._property_changed(self, args)
@@ -112,12 +146,13 @@ class WorksetViewCreatorWindow(object):
         self.selected_worksets = []
         self.workset_items = []
         
-        # Load XAML
+        # Load XAML — use io.open() for UTF-8 (IronPython 2.7 compatible)
         try:
             if not os.path.exists(xaml_file):
                 forms.alert("XAML file not found at: {}".format(xaml_file), title="Error", exitscript=True)
             
-            with open(xaml_file, 'r') as f:
+            import io
+            with io.open(xaml_file, 'r', encoding='utf-8') as f:
                 xaml_content = f.read()
                 self._window = XamlReader.Parse(xaml_content)
         except Exception as e:
@@ -143,8 +178,11 @@ class WorksetViewCreatorWindow(object):
         self.btnCreate.Click += self.OnCreate
         self._window.Closing += self.OnClose
         
-        # Enable full row click - this is the key improvement
+        # Enable full row click — but skip toggle when clicking inside the TextBox
         self.dgWorksets.LoadingRow += self.OnRowLoading
+
+        # Block Space key from being swallowed by DataGrid when TextBox has focus
+        self.dgWorksets.PreviewKeyDown += self.OnGridPreviewKeyDown
         
         # Load worksets
         self.LoadWorksets()
@@ -153,22 +191,85 @@ class WorksetViewCreatorWindow(object):
     def OnHeaderDrag(self, sender, args):
         """Allow window dragging from header"""
         self._window.DragMove()
+
+    def OnGridPreviewKeyDown(self, sender, args):
+        """
+        If key input originates from a TextBox inside the grid,
+        do not let the DataGrid intercept/toggle selection.
+        """
+        from System.Windows.Controls import TextBox as WpfTextBox
+        original = args.OriginalSource
+        parent = original
+        while parent is not None:
+            if isinstance(parent, WpfTextBox):
+                args.Handled = False
+                return
+            try:
+                parent = System.Windows.Media.VisualTreeHelper.GetParent(parent)
+            except Exception:
+                break
     
     def OnRowLoading(self, sender, args):
-        """Handle row loading to enable full row click"""
+        """Handle row loading to enable full row click and suppress space in TextBox"""
         row = args.Row
-        # Add mouse click handler to the entire row
         row.MouseLeftButtonUp += MouseButtonEventHandler(self.OnRowClick)
+        row.PreviewKeyDown    += self.OnRowPreviewKeyDown
+
+    def OnRowPreviewKeyDown(self, sender, args):
+        """
+        If Space is pressed while a TextBox inside the row has focus,
+        mark event as Handled=False so it flows to the TextBox,
+        but prevent the DataGrid row from intercepting it as a select/toggle.
+        We achieve this by stopping routing at the DataGrid boundary.
+        """
+        from System.Windows.Input import Key
+        from System.Windows.Controls import TextBox as WpfTextBox
+        if args.Key == Key.Space:
+            # Walk up from original source — if it's a TextBox, stop propagation
+            original = args.OriginalSource
+            parent   = original
+            while parent is not None:
+                if isinstance(parent, WpfTextBox):
+                    args.Handled = True   # prevents DataGrid from seeing it
+                    # Manually insert space into the TextBox
+                    try:
+                        tb = parent
+                        start = tb.SelectionStart
+                        tb.Text = tb.Text[:start] + " " + tb.Text[start + tb.SelectionLength:]
+                        tb.SelectionStart  = start + 1
+                        tb.SelectionLength = 0
+                    except Exception:
+                        pass
+                    return
+                try:
+                    parent = System.Windows.Media.VisualTreeHelper.GetParent(parent)
+                except Exception:
+                    break
     
     def OnRowClick(self, sender, args):
-        """Handle row click - toggle selection"""
+        """
+        Toggle workset selection on row click.
+        Skip the toggle when the click originated inside the View Name TextBox
+        so the user can type freely without accidentally toggling the checkbox.
+        """
         try:
-            row = sender
+            # Walk up the visual tree from the original source.
+            # If the click came from a TextBox (the View Name input), do nothing.
+            from System.Windows.Controls import TextBox as WpfTextBox
+            original = args.OriginalSource
+            parent   = original
+            while parent is not None:
+                if isinstance(parent, WpfTextBox):
+                    return   # click was inside the text input — don't toggle
+                try:
+                    parent = System.Windows.Media.VisualTreeHelper.GetParent(parent)
+                except Exception:
+                    break
+
+            row  = sender
             item = row.Item
             if item and hasattr(item, 'IsSelected'):
-                # Toggle selection
                 item.IsSelected = not item.IsSelected
-                # Refresh to update UI
                 self.dgWorksets.Items.Refresh()
         except Exception as e:
             output.print_md("Row click error: {}".format(str(e)))
@@ -204,9 +305,38 @@ class WorksetViewCreatorWindow(object):
         except Exception as e:
             forms.alert("Error loading worksets: {}".format(str(e)), title="Error")
     
+    def UpdateCount(self):
+        """Update workset count display"""
+        total    = len(self.workset_items)
+        selected = sum(1 for item in self.workset_items if item.IsSelected)
+
+        self.txtWorksetCount.Text = "{} worksets loaded, {} selected".format(total, selected)
+
+        # Update status bar
+        if selected == 0:
+            self.txtStatus.Text = "Select worksets to create 3D views"
+        else:
+            ready  = sum(1 for item in self.workset_items
+                         if item.IsSelected and item.Status == "Ready to Create")
+            exists = sum(1 for item in self.workset_items
+                         if item.IsSelected and item.Status == "Already Exists")
+
+            # Count how many selected items use a custom name
+            custom = sum(1 for item in self.workset_items
+                         if item.IsSelected and item.ViewName != item.Name)
+
+            parts = []
+            if ready > 0:
+                parts.append("{} new view(s) will be created".format(ready))
+            if exists > 0:
+                parts.append("{} already exist (will be skipped)".format(exists))
+            if custom > 0:
+                parts.append("{} using custom name(s)".format(custom))
+
+            self.txtStatus.Text = "Ready — " + "  |  ".join(parts) if parts else "Select worksets"
     def OnItemPropertyChanged(self, sender, args):
         """Handle property change in workset items"""
-        if args.PropertyName == "IsSelected":
+        if args.PropertyName in ("IsSelected", "Status"):
             self.UpdateCount()
     
     def UpdateCount(self):
@@ -309,11 +439,17 @@ def create_workset_views(selected_workset_items, view_type_3D):
     
     try:
         for idx, item in enumerate(selected_workset_items):
-            view_name = item.ViewName
+            # If user left View Name blank → use workset name as fallback
+            view_name = item.ViewName.strip() if item.ViewName.strip() else item.Workset.Name
             workset = item.Workset
             all_worksets = item.AllWorksets
             
-            output.print_md("**[{}/{}]** Processing: {}".format(idx + 1, len(selected_workset_items), workset.Name))
+            output.print_md("**[{}/{}]** Processing: {} → View: **{}**{}".format(
+                idx + 1, len(selected_workset_items),
+                workset.Name,
+                view_name,
+                "  *(custom name)*" if view_name != workset.Name else ""
+            ))
             
             # Skip if already exists
             if item.Status == "Already Exists":

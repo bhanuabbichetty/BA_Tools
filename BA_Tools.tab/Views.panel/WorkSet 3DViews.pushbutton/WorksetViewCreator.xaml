@@ -1,6 +1,6 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="BA_Tools"
+        Title="WORKSET 3D VIEW CREATOR"
         Width="900" Height="700"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
@@ -10,10 +10,23 @@
         x:Name="MainWindow">
 
     <Window.Resources>
+        <LinearGradientBrush x:Key="ShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#0A0A12" Offset="0"/>
+            <GradientStop Color="#0A0A12" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="HeaderBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#0E0E1A" Offset="0"/>
+            <GradientStop Color="#0E0E1A" Offset="1"/>
+        </LinearGradientBrush>
+        <DropShadowEffect x:Key="CardShadow"
+                          Color="#000000"
+                          Opacity="0.12"
+                          BlurRadius="16"
+                          ShadowDepth="1"/>
 
         <!-- ── Slim Scrollbar ── -->
         <Style TargetType="ScrollBar">
-            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Background" Value="#1A1A2A"/>
             <Setter Property="Width" Value="5"/>
         </Style>
         <Style TargetType="ScrollViewer">
@@ -81,7 +94,7 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="bd" Property="Background" Value="#22223A"/>
                                 <Setter TargetName="bd" Property="BorderBrush" Value="#2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -131,7 +144,7 @@
 
         <!-- ── DataGrid ── -->
         <Style x:Key="DataGridStyle" TargetType="DataGrid">
-            <Setter Property="Background" Value="#0A0A12"/>
+            <Setter Property="Background" Value="#0E0E1A"/>
             <Setter Property="Foreground" Value="#C8C8E8"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
             <Setter Property="BorderThickness" Value="0.8"/>
@@ -144,16 +157,16 @@
             <Setter Property="SelectionMode" Value="Single"/>
             <Setter Property="SelectionUnit" Value="FullRow"/>
             <Setter Property="RowBackground" Value="#0E0E1A"/>
-            <Setter Property="AlternatingRowBackground" Value="#0A0A12"/>
+            <Setter Property="AlternatingRowBackground" Value="#0E0E1A"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="RowHeight" Value="34"/>
+            <Setter Property="RowHeight" Value="36"/>
         </Style>
 
         <!-- ── DataGrid Column Header ── -->
         <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#0A0A12"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#131326"/>
+            <Setter Property="Foreground" Value="#1D4E80"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="15,10"/>
@@ -163,35 +176,66 @@
             <Setter Property="Height" Value="40"/>
         </Style>
 
-        <!-- ── DataGrid Cell ── -->
+        <!-- ── DataGrid Cell — no border, no selection colour, no focus ring ── -->
         <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="Foreground" Value="#C8C8E8"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <!-- No selection-colour Border — completely transparent always -->
+                        <Border Background="Transparent"
+                                BorderThickness="0"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- ── DataGrid Row ── -->
+        <!-- ── DataGrid Row — transparent selected state, subtle hover only ── -->
         <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#1A2A3A"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridRow">
+                        <Border x:Name="rowBorder"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                SnapsToDevicePixels="True">
+                            <DataGridCellsPresenter ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="rowBorder" Property="Background" Value="#131326"/>
+                            </Trigger>
+                            <!-- Selected state — keep same as alternating rows, NO blue -->
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="rowBorder" Property="Background" Value="Transparent"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="rowBorder" Property="Background" Value="#131326"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- ── CheckBox Style (DataGrid inline) ── -->
         <Style x:Key="CheckBoxStyle" TargetType="CheckBox">
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="#1976D2"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -204,10 +248,10 @@
     <!-- ══════════════════════════════════════════════════════
          OUTER SHELL — full dark, no OS chrome, rounded
     ════════════════════════════════════════════════════════ -->
-    <Border Background="#0A0A12"
+    <Border Background="{StaticResource ShellBackgroundBrush}"
             CornerRadius="12"
-            BorderBrush="#0A0A12"
-            BorderThickness="0">
+            BorderBrush="#1976D2"
+            BorderThickness="1">
 
         <Grid>
             <Grid.RowDefinitions>
@@ -222,7 +266,7 @@
             ══════════════════════════════════════════════ -->
             <Border x:Name="headerDragArea"
                     Grid.Row="0"
-                    Background="#0E0E1A"
+                    Background="{StaticResource HeaderBackgroundBrush}"
                     CornerRadius="12,12,0,0"
                     BorderBrush="#1976D2"
                     BorderThickness="0,0,0,1">
@@ -251,7 +295,7 @@
                     <TextBlock Grid.Column="1"
                                Text="WORKSET 3D VIEW CREATOR"
                                FontSize="18" FontWeight="Bold"
-                               Foreground="White" FontFamily="Segoe UI"
+                               Foreground="#1D4E80" FontFamily="Segoe UI"
                                VerticalAlignment="Center"
                                Margin="14,0,0,0"/>
 
@@ -269,7 +313,7 @@
             ══════════════════════════════════════════════ -->
             <TextBlock Grid.Row="1"
                        Text="Select worksets to create isolated 3D views"
-                       FontSize="12" FontFamily="Segoe UI"
+                       FontSize="10" FontFamily="Segoe UI"
                        Foreground="#FFCDA2"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"/>
@@ -297,7 +341,7 @@
 
                     <TextBlock Grid.Column="0"
                                Text="AVAILABLE WORKSETS"
-                               Foreground="White"
+                               Foreground="#1D4E80"
                                FontFamily="Segoe UI"
                                FontSize="14" FontWeight="Bold"
                                VerticalAlignment="Center"/>
@@ -320,12 +364,15 @@
                         Background="#0E0E1A"
                         CornerRadius="8"
                         BorderBrush="#1976D2"
-                        BorderThickness="0.8">
+                        BorderThickness="0.8"
+                        Effect="{StaticResource CardShadow}">
                     <DataGrid x:Name="dgWorksets"
                               Style="{StaticResource DataGridStyle}"
                               RowStyle="{StaticResource DataGridRowStyle}"
                               Background="Transparent"
-                              BorderThickness="0">
+                              BorderThickness="0"
+                              KeyboardNavigation.TabNavigation="Once"
+                              FocusVisualStyle="{x:Null}">
                         <DataGrid.Columns>
 
                             <!-- Checkbox Column -->
@@ -346,10 +393,10 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <!-- Workset Name Column -->
+                            <!-- Workset Name Column (read-only) -->
                             <DataGridTextColumn Header="Workset Name"
                                                 Binding="{Binding Name}"
-                                                Width="*"
+                                                Width="220"
                                                 IsReadOnly="True">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader"
@@ -360,15 +407,92 @@
                                            BasedOn="{StaticResource DataGridCellStyle}">
                                         <Setter Property="FontWeight" Value="SemiBold"/>
                                         <Setter Property="FontSize" Value="13"/>
-                                        <Setter Property="Foreground" Value="#64B5F6"/>
+                                        <Setter Property="Foreground" Value="#C8C8E8"/>
                                     </Style>
                                 </DataGridTextColumn.CellStyle>
                             </DataGridTextColumn>
 
+                            <!-- View Name Column — always-visible input box -->
+                            <DataGridTemplateColumn Header="View Name" Width="*">
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader"
+                                           BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                                        <Setter Property="Foreground" Value="#1976D2"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox x:Name="txbViewName"
+                                                 Text="{Binding ViewName, Mode=TwoWay,
+                                                        UpdateSourceTrigger=PropertyChanged}"
+                                                 Background="#F8FCFF"
+                                                 Foreground="#C8C8E8"
+                                                 BorderThickness="0,0,0,1"
+                                                 BorderBrush="#1976D2"
+                                                 FontFamily="Segoe UI"
+                                                 FontSize="12"
+                                                 FontWeight="SemiBold"
+                                                 Padding="15,0,8,0"
+                                                 VerticalContentAlignment="Center"
+                                                 CaretBrush="#1976D2"
+                                                 SelectionBrush="#1976D2"
+                                                 IsUndoEnabled="True"
+                                                 AcceptsReturn="False"
+                                                 FocusVisualStyle="{x:Null}">
+                                            <TextBox.Style>
+                                                <Style TargetType="TextBox">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="TextBox">
+                                                                <Border x:Name="bdr"
+                                                                        Background="{TemplateBinding Background}"
+                                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                                                    <Grid>
+                                                                        <!-- Placeholder text -->
+                                                                        <TextBlock x:Name="placeholder"
+                                                                                   Text="Type custom view name..."
+                                                                                   Foreground="#8888AA"
+                                                                                   FontFamily="Segoe UI"
+                                                                                   FontSize="11"
+                                                                                   FontStyle="Italic"
+                                                                                   Padding="15,0,0,0"
+                                                                                   VerticalAlignment="Center"
+                                                                                   IsHitTestVisible="False"
+                                                                                   Visibility="Collapsed"/>
+                                                                        <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
+                                                                    </Grid>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <!-- Show placeholder only when empty AND not focused -->
+                                                                    <MultiTrigger>
+                                                                        <MultiTrigger.Conditions>
+                                                                            <Condition Property="Text" Value=""/>
+                                                                            <Condition Property="IsFocused" Value="False"/>
+                                                                        </MultiTrigger.Conditions>
+                                                                        <Setter TargetName="placeholder"
+                                                                                Property="Visibility" Value="Visible"/>
+                                                                    </MultiTrigger>
+                                                                    <!-- Active focus: subtle bottom line highlight only -->
+                                                                    <Trigger Property="IsFocused" Value="True">
+                                                                        <Setter TargetName="bdr"
+                                                                                Property="BorderBrush" Value="#1976D2"/>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </TextBox.Style>
+                                        </TextBox>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
                             <!-- Status Column -->
                             <DataGridTextColumn Header="Status"
                                                 Binding="{Binding Status}"
-                                                Width="200"
+                                                Width="180"
                                                 IsReadOnly="True">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader"
@@ -378,7 +502,7 @@
                                     <Style TargetType="DataGridCell"
                                            BasedOn="{StaticResource DataGridCellStyle}">
                                         <Setter Property="FontStyle" Value="Italic"/>
-                                        <Setter Property="Foreground" Value="#808090"/>
+                                        <Setter Property="Foreground" Value="#8888AA"/>
                                     </Style>
                                 </DataGridTextColumn.CellStyle>
                             </DataGridTextColumn>
@@ -397,14 +521,14 @@
                     <TextBlock x:Name="txtWorksetCount"
                                Grid.Column="0"
                                Text="0 worksets loaded, 0 selected"
-                               Foreground="#C8C8E8"
+                               Foreground="#8888AA"
                                FontSize="12" FontWeight="SemiBold"
                                FontFamily="Segoe UI"
                                VerticalAlignment="Center"/>
 
                     <TextBlock Grid.Column="1"
                                Text="Tip: Click anywhere on a row to select it"
-                               Foreground="#606080"
+                               Foreground="#8888AA"
                                FontSize="11" FontStyle="Italic"
                                FontFamily="Segoe UI"
                                VerticalAlignment="Center"/>
@@ -416,7 +540,8 @@
                         CornerRadius="8"
                         BorderBrush="#1976D2"
                         BorderThickness="0.8"
-                        Padding="16,12">
+                        Padding="16,12"
+                        Effect="{StaticResource CardShadow}">
                     <StackPanel>
                         <TextBlock Text="ℹ  How it works"
                                    Foreground="#1976D2"
@@ -425,25 +550,27 @@
                                    FontSize="10"
                                    Margin="0,0,0,8"/>
                         <StackPanel Margin="10,0,0,0">
-                            <TextBlock Foreground="#808090" FontFamily="Segoe UI" FontSize="10" Margin="0,0,0,3">
-                                <Run Foreground="#FFCDA2" FontWeight="Bold">1.</Run>
+                            <TextBlock Foreground="#A0A0C0" FontFamily="Segoe UI" FontSize="10" Margin="0,0,0,3">
+                                <Run Foreground="#1976D2" FontWeight="Bold">1.</Run>
                                 <Run> Click on any workset row to select / deselect it</Run>
                             </TextBlock>
-                            <TextBlock Foreground="#808090" FontFamily="Segoe UI" FontSize="10" Margin="0,0,0,3">
-                                <Run Foreground="#FFCDA2" FontWeight="Bold">2.</Run>
+                            <TextBlock Foreground="#A0A0C0" FontFamily="Segoe UI" FontSize="10" Margin="0,0,0,3">
+                                <Run Foreground="#1976D2" FontWeight="Bold">2.</Run>
+                                <Run> Edit the </Run>
+                                <Run Foreground="#1976D2" FontWeight="Bold">View Name</Run>
+                                <Run> column to use a custom name — or leave it to use the workset name</Run>
+                            </TextBlock>
+                            <TextBlock Foreground="#A0A0C0" FontFamily="Segoe UI" FontSize="10" Margin="0,0,0,3">
+                                <Run Foreground="#1976D2" FontWeight="Bold">3.</Run>
                                 <Run> Click CREATE VIEWS to generate isolated 3D views</Run>
                             </TextBlock>
-                            <TextBlock Foreground="#808090" FontFamily="Segoe UI" FontSize="10" Margin="0,0,0,3">
-                                <Run Foreground="#FFCDA2" FontWeight="Bold">3.</Run>
-                                <Run> Views will be named the same as the workset name</Run>
-                            </TextBlock>
-                            <TextBlock Foreground="#808090" FontFamily="Segoe UI" FontSize="10" Margin="0,0,0,3">
-                                <Run Foreground="#FFCDA2" FontWeight="Bold">4.</Run>
+                            <TextBlock Foreground="#A0A0C0" FontFamily="Segoe UI" FontSize="10" Margin="0,0,0,3">
+                                <Run Foreground="#1976D2" FontWeight="Bold">4.</Run>
                                 <Run> Each view will show ONLY that workset's elements</Run>
                             </TextBlock>
-                            <TextBlock Foreground="#808090" FontFamily="Segoe UI" FontSize="10">
-                                <Run Foreground="#FFCDA2" FontWeight="Bold">5.</Run>
-                                <Run> Existing views with the same name will be skipped</Run>
+                            <TextBlock Foreground="#A0A0C0" FontFamily="Segoe UI" FontSize="10">
+                                <Run Foreground="#1976D2" FontWeight="Bold">5.</Run>
+                                <Run> Views with the same name already in the project will be skipped</Run>
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
@@ -455,7 +582,7 @@
                  ROW 3 — FOOTER
             ══════════════════════════════════════════════ -->
             <Border Grid.Row="3"
-                    Background="#0E0E1A"
+                    Background="{StaticResource HeaderBackgroundBrush}"
                     CornerRadius="0,0,12,12"
                     BorderBrush="#1976D2"
                     BorderThickness="0,1,0,0"

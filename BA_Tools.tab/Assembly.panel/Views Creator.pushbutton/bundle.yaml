@@ -1,0 +1,8 @@
+name: Views Creator
+bundle_type: PushButton
+tooltip: >
+  Create assembly views, place them on a production sheet layout,
+  and assign view templates, viewport types, and revisions.
+author: Bhanu Prakash A
+min_revit_ver: 2019
+max_revit_ver: 2026

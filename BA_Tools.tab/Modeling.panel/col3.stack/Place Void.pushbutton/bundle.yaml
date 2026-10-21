@@ -1,0 +1,7 @@
+title: Place Void
+tooltip: >
+  Select wall(s), choose a loaded face-based void family and type, then
+  set the opening height and level offset. The tool places face-hosted
+  instances on the selected walls and attempts to cut each wall.
+author: Bhanu Prakash A
+context: doc-project

@@ -1,7 +1,6 @@
 title: "Toggle\nLevels"
-tooltip: |
-  Toggle level bubbles in View.
-
-  Press "Esc" to finalize the process
-
-  Author: Bhanu Prakash A
+tooltip: >
+  Show or hide level bubbles at the selected ends of levels in the active
+  view. Pick the levels to change; press Esc to cancel selection.
+author: Bhanu Prakash A
+context: doc-project

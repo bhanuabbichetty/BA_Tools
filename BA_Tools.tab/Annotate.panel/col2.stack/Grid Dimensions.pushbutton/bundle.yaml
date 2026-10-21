@@ -1,0 +1,10 @@
+name: Grid Dimensions
+bundle_type: PushButton
+tooltip: >
+  Dimension grids and control grid bubbles on the chosen sides
+  (top / bottom / left / right) for the current view or several
+  views at once, with a selectable dimension style and 2D/3D
+  grid extent.
+author: Bhanu Prakash A
+min_revit_ver: 2019
+max_revit_ver: 2026

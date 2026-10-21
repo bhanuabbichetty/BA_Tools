@@ -1,31 +1,7 @@
-title: "NWC Export"
-tooltip: 
-  Version = 1.0
-  Date    = 16.01.2026
-  ___________________________________
-  Description
-
-  Export Selected 3D views to NWC
-  (Navisworks Cache) format.
-
-  File names are generated using
-  the Revit project name.
-  Export uses current Navisworks
-  export settings.
-
-  User selects the destination folder.
-  Press "Esc" to cancel the process.
-  ____________________________________
-  How-to
-  -> Click on the button
-  -> Select export location
-  -> Script exports selected 3D views
-  ____________________________________
-  Last update
-  - [16.01.2026] - 1.0 RELEASE
-  ____________________________________
-Bundle Name:
-  NWC Export (pushbutton)
-
+name: NWC Export
+tooltip: >
+  Export selected 3D views to Navisworks Cache (NWC) files using the
+  current Navisworks export settings. Choose the destination folder
+  when prompted; press Esc to cancel.
 author: Bhanu Prakash A
 context: doc-project

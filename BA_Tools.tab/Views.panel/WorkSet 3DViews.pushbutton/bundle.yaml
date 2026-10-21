@@ -1,0 +1,7 @@
+title: Workset 3D Views
+tooltip: >
+  Create named 3D views for selected worksets and isolate each view to
+  its workset elements. Select worksets, enter view names, and run the
+  tool from the active project.
+author: Bhanu Prakash A
+context: doc-project

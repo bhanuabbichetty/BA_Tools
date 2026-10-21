@@ -1,7 +1,6 @@
 title: "Toggle\nGrids"
-tooltip: |
-  Toggle grid bubbles in View.
-
-  Press "Esc" to finalize the process
-
-  Author: Bhanu Prakash A
+tooltip: >
+  Show or hide grid bubbles at the selected ends of grids in the active
+  view. Pick the grids to change; press Esc to cancel selection.
+author: Bhanu Prakash A
+context: doc-project

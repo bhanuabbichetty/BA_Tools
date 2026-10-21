@@ -1,0 +1,9 @@
+name: Toggle Origins
+bundle_type: PushButton
+tooltip: >
+  Show or hide the Survey Point, Project Base Point and Internal
+  Origin in the active view. One click reveals all three; the next
+  click hides them again.
+author: Bhanu Prakash A
+min_revit_ver: 2019
+max_revit_ver: 2026
