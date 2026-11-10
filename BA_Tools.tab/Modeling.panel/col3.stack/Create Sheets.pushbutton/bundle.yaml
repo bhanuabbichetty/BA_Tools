@@ -1,9 +1,6 @@
-name: Insulated Wall Parts
-bundle_type: PushButton
-tooltip: >
-  Select walls, then click to split them into insulated wall parts.
-  Creates concrete borders: 75mm left/right, 150mm top, 50mm bottom.
-  The interior region is assigned the Insulation material.
-author: Your Name
+title: Create Sheets
+tooltip: Create sheets with sheet numbers, names, and a selected title block.
+author: Bhanu Prakash A
+context: doc-project
 min_revit_ver: 2019
 max_revit_ver: 2025
