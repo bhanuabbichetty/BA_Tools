@@ -366,16 +366,16 @@ def place_dowels_on_face(face, face_ref, wall, symbol,
             # Set Model Properties parameters if provided
             if instance and model_props:
                 try:
-                    set_family_parameter(instance, "Dowel Offset", model_props.get("dowel_offset", 100.0))
-                    set_family_parameter(instance, "Gap @ Top", model_props.get("gap_top", 100.0))
+                    set_family_parameter(instance, "Dowel Offset", model_props.get("dowel_offset", 80.0))
+                    set_family_parameter(instance, "Gap @ Top", model_props.get("gap_top", 20.0))
                     
                     # Try both possible names for C/P Joint Distance
-                    cp_joint = model_props.get("cp_joint_distance", 150.0)
+                    cp_joint = model_props.get("cp_joint_distance", 16.0)
                     if not set_family_parameter(instance, "C/P Joint Distance", cp_joint):
                         set_family_parameter(instance, "CIP/Joint Distance", cp_joint)
                     
                     set_family_parameter(instance, "Embedded Bar Depth", model_props.get("embedded_depth", 800.0))
-                    set_family_parameter(instance, "Embedded Bar Depth (X-Dir)", model_props.get("embedded_x", 500.0))
+                    set_family_parameter(instance, "Embedded Bar Depth (X-Dir)", model_props.get("embedded_x", 800.0))
                     set_family_parameter(instance, "Embedded Bar Depth (Y-Dir)", model_props.get("embedded_y", 300.0))
                 except Exception as e:
                     # Silently continue if parameter setting fails
@@ -396,23 +396,36 @@ def place_dowels_on_face(face, face_ref, wall, symbol,
 
 class DowelPlacerWindow(object):
 
+    # Default family/type to pre-select on load
+    DEFAULT_FAMILY_NAME = "NCP-Grout Tube_Slant Type (St & L)"
+    DEFAULT_TYPE_NAME   = "T16_L_Dia=50_H=500"
+
+    # Ordered position names (must match family parameter names exactly)
+    POSITION_NAMES = ["Position A", "Position B", "Position C", "Position D"]
+
     def __init__(self, xaml_path):
         stream = StreamReader(xaml_path)
         self._window = XamlReader.Load(stream.BaseStream)
         stream.Close()
 
-        self.all_families      = {}   # {name: Family}
+        self.all_families      = {}
         self.filtered_families = {}
         self.selected_family   = None
         self.selected_symbol   = None
         self.result            = False
 
+        # Track which position button is currently active (None = none selected)
+        self.active_position   = None  # e.g. "A", "B", "C", or "D"
+
         # ── Controls ───────────────────────────────────────────────────────
         self.headerDragArea    = self._window.FindName("headerDragArea")
         self.btnClose          = self._window.FindName("btnClose")
-        self.txtFamilySearch   = self._window.FindName("txtFamilySearch")
-        self.lstFamilies       = self._window.FindName("lstFamilies")
-        self.lstTypes          = self._window.FindName("lstTypes")
+        self.txtFamilySearch   = None  # removed — search now via typing in ComboBox
+        self.cmbFamilies       = self._window.FindName("cmbFamilies")
+        self.cmbTypes          = self._window.FindName("cmbTypes")
+        # aliases kept for compatibility with internal helpers
+        self.lstFamilies       = self.cmbFamilies
+        self.lstTypes          = self.cmbTypes
 
         self.txtLeftOffset     = self._window.FindName("txtLeftOffset")
         self.txtRightOffset    = self._window.FindName("txtRightOffset")
@@ -420,21 +433,36 @@ class DowelPlacerWindow(object):
         self.txtVerticalOffset = self._window.FindName("txtVerticalOffset")
         self.txtRotation       = self._window.FindName("txtRotation")
 
-        # Model Properties Parameters
-        self.txtDowelOffset       = self._window.FindName("txtDowelOffset")
-        self.txtGapTop            = self._window.FindName("txtGapTop")
-        self.txtCPJointDistance   = self._window.FindName("txtCPJointDistance")
-        self.txtEmbeddedBarDepth  = self._window.FindName("txtEmbeddedBarDepth")
-        self.txtEmbeddedDepthX    = self._window.FindName("txtEmbeddedDepthX")
-        self.txtEmbeddedDepthY    = self._window.FindName("txtEmbeddedDepthY")
+        # Model Properties
+        self.txtDowelOffset      = self._window.FindName("txtDowelOffset")
+        self.txtGapTop           = self._window.FindName("txtGapTop")
+        self.txtCPJointDistance  = self._window.FindName("txtCPJointDistance")
+        self.txtEmbeddedBarDepth = self._window.FindName("txtEmbeddedBarDepth")
+        self.txtEmbeddedDepthX   = self._window.FindName("txtEmbeddedDepthX")
+        self.txtEmbeddedDepthY   = self._window.FindName("txtEmbeddedDepthY")
 
-        self.txtSelectedFamily = self._window.FindName("txtSelectedFamily")
-        self.txtSelectedType   = self._window.FindName("txtSelectedType")
-        self.txtEstimatedCount = self._window.FindName("txtEstimatedCount")
+        self.txtSelectedFamily  = self._window.FindName("txtSelectedFamily")
+        self.txtSelectedType    = self._window.FindName("txtSelectedType")
+        self.txtEstimatedCount  = self._window.FindName("txtEstimatedCount")
+        self.txtStatus          = self._window.FindName("txtStatus")
+        self.txtActivePosition  = self._window.FindName("txtActivePosition")
 
-        self.txtStatus         = self._window.FindName("txtStatus")
-        self.btnCancel         = self._window.FindName("btnCancel")
-        self.btnPickFace       = self._window.FindName("btnPickFace")
+        self.btnCancel          = self._window.FindName("btnCancel")
+        self.btnPickFace        = self._window.FindName("btnPickFace")
+
+        # Visibility toggle buttons (radio-style)
+        self.btnPosA = self._window.FindName("btnPosA")
+        self.btnPosB = self._window.FindName("btnPosB")
+        self.btnPosC = self._window.FindName("btnPosC")
+        self.btnPosD = self._window.FindName("btnPosD")
+
+        # Map letter → button for quick lookup
+        self._pos_buttons = {
+            "A": self.btnPosA,
+            "B": self.btnPosB,
+            "C": self.btnPosC,
+            "D": self.btnPosD,
+        }
 
         # ── Setup ──────────────────────────────────────────────────────────
         self.LoadFamilies()
@@ -450,50 +478,113 @@ class DowelPlacerWindow(object):
 
     def LoadFamilies(self):
         self.all_families = get_all_loadable_families()
-        self.RefreshFamilyList("")
+        self.cmbFamilies.Items.Clear()
+        for name in sorted(self.all_families.keys()):
+            self.cmbFamilies.Items.Add(name)
+        self.txtStatus.Text = "{} families loaded".format(len(self.all_families))
+
+        # Auto-select default family if present
+        default = self.DEFAULT_FAMILY_NAME
+        for i in range(self.cmbFamilies.Items.Count):
+            if self.cmbFamilies.Items.GetItemAt(i) == default:
+                self.cmbFamilies.SelectedIndex = i
+                break
 
     def RefreshFamilyList(self, search_text):
-        self.lstFamilies.Items.Clear()
-        search = search_text.lower()
-        self.filtered_families = {
-            k: v for k, v in sorted(self.all_families.items())
-            if not search or search in k.lower()
-        }
-        for name in self.filtered_families:
-            self.lstFamilies.Items.Add(name)
-
-        count = len(self.filtered_families)
-        self.txtStatus.Text = "{} families loaded".format(count)
+        # kept for compatibility — ComboBox doesn't use external search box
+        pass
 
     def PopulateTypes(self, family):
-        self.lstTypes.Items.Clear()
+        self.cmbTypes.Items.Clear()
         for type_name, sym in get_types_for_family(family):
-            self.lstTypes.Items.Add(type_name)
-        if self.lstTypes.Items.Count == 1:
-            self.lstTypes.SelectedIndex = 0
+            self.cmbTypes.Items.Add(type_name)
+        # Auto-select default type if family matches
+        if (self.selected_family and
+                self.selected_family.Name == self.DEFAULT_FAMILY_NAME):
+            for i in range(self.cmbTypes.Items.Count):
+                if self.cmbTypes.Items.GetItemAt(i) == self.DEFAULT_TYPE_NAME:
+                    self.cmbTypes.SelectedIndex = i
+                    return
+        if self.cmbTypes.Items.Count == 1:
+            self.cmbTypes.SelectedIndex = 0
+
+    # ── Visibility toggle (radio-style) ────────────────────────────────────
+
+    def _get_off_style(self):
+        """Return the VisToggleOff style resource."""
+        return self._window.FindResource("VisToggleOff")
+
+    def _get_on_style(self):
+        """Return the VisToggleOn style resource."""
+        return self._window.FindResource("VisToggleOn")
+
+    def SetActivePosition(self, letter):
+        """
+        Toggle visibility selection:
+        - If 'letter' is already active → deselect (set active_position = None).
+        - Otherwise → activate 'letter', deactivate all others.
+        Updates button styles and the active indicator label.
+        """
+        if self.active_position == letter:
+            # Clicking the active button again deselects it
+            self.active_position = None
+        else:
+            self.active_position = letter
+
+        off_style = self._get_off_style()
+        on_style  = self._get_on_style()
+
+        for key, btn in self._pos_buttons.items():
+            if btn is not None:
+                btn.Style = on_style if key == self.active_position else off_style
+
+        if self.txtActivePosition is not None:
+            if self.active_position:
+                self.txtActivePosition.Text = "Position {}".format(self.active_position)
+                self.txtActivePosition.Foreground = \
+                    System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(0x64, 0xB5, 0xF6)
+                    )
+            else:
+                self.txtActivePosition.Text = "None"
+                self.txtActivePosition.Foreground = \
+                    System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(0x50, 0x50, 0x70)
+                    )
 
     # ── Event handlers ─────────────────────────────────────────────────────
 
     def SetupEventHandlers(self):
-        self.btnClose.Click              += self.OnClose
-        self.btnCancel.Click             += self.OnClose
-        self.txtFamilySearch.TextChanged += self.OnSearchChanged
-        self.lstFamilies.SelectionChanged+= self.OnFamilySelected
-        self.lstTypes.SelectionChanged   += self.OnTypeSelected
-        self.btnPickFace.Click           += self.OnPickFace
+        self.btnClose.Click               += self.OnClose
+        self.btnCancel.Click              += self.OnClose
+        self.cmbFamilies.SelectionChanged += self.OnFamilySelected
+        self.cmbTypes.SelectionChanged    += self.OnTypeSelected
+        self.btnPickFace.Click            += self.OnPickFace
+        # Visibility toggle buttons
+        if self.btnPosA: self.btnPosA.Click += self.OnPosToggle
+        if self.btnPosB: self.btnPosB.Click += self.OnPosToggle
+        if self.btnPosC: self.btnPosC.Click += self.OnPosToggle
+        if self.btnPosD: self.btnPosD.Click += self.OnPosToggle
+
+    def OnPosToggle(self, sender, args):
+        """Radio-style: only one position active at a time; click again to deselect."""
+        tag = sender.Tag
+        if tag:
+            self.SetActivePosition(str(tag))
 
     def OnClose(self, sender, args):
         self._window.DialogResult = False
         self._window.Close()
 
     def OnSearchChanged(self, sender, args):
-        self.RefreshFamilyList(self.txtFamilySearch.Text or "")
+        # Not used — ComboBox handles its own filtering
+        pass
 
     def OnFamilySelected(self, sender, args):
-        sel = self.lstFamilies.SelectedItem
+        sel = self.cmbFamilies.SelectedItem
         if sel is None:
             return
-        family = self.filtered_families.get(sel)
+        family = self.all_families.get(sel)
         if family is None:
             return
         self.selected_family = family
@@ -504,10 +595,9 @@ class DowelPlacerWindow(object):
         self.UpdatePickButton()
 
     def OnTypeSelected(self, sender, args):
-        sel = self.lstTypes.SelectedItem
+        sel = self.cmbTypes.SelectedItem
         if sel is None or self.selected_family is None:
             return
-        # Find the matching symbol
         for type_name, sym in get_types_for_family(self.selected_family):
             if type_name == sel:
                 self.selected_symbol = sym
@@ -526,13 +616,11 @@ class DowelPlacerWindow(object):
     # ── Main action ────────────────────────────────────────────────────────
 
     def OnPickFace(self, sender, args):
-        """Validate inputs, hide window, pick face, place dowels."""
-        # Validate
-        left_mm  = safe_float(self.txtLeftOffset.Text,     150.0)
-        right_mm = safe_float(self.txtRightOffset.Text,    150.0)
-        spacing_mm = safe_float(self.txtSpacing.Text,      300.0)
-        v_off_mm = safe_float(self.txtVerticalOffset.Text, 100.0)
-        rot_deg  = safe_float(self.txtRotation.Text,         0.0)
+        left_mm    = safe_float(self.txtLeftOffset.Text,     250.0)
+        right_mm   = safe_float(self.txtRightOffset.Text,    250.0)
+        spacing_mm = safe_float(self.txtSpacing.Text,        1000.0)
+        v_off_mm   = safe_float(self.txtVerticalOffset.Text, 16.0)
+        rot_deg    = safe_float(self.txtRotation.Text,         0.0)
 
         if spacing_mm <= 0:
             forms.alert("Spacing must be greater than 0.", title="Validation Error")
@@ -541,9 +629,7 @@ class DowelPlacerWindow(object):
             forms.alert("Offsets cannot be negative.", title="Validation Error")
             return
 
-        # Store values and close UI — let user pick face
         self._window.Hide()
-
         try:
             self._PickAndPlace(left_mm, right_mm, spacing_mm, v_off_mm, rot_deg)
         except Exception as e:
@@ -555,8 +641,6 @@ class DowelPlacerWindow(object):
             self._window.ShowDialog()
 
     def _PickAndPlace(self, left_mm, right_mm, spacing_mm, v_off_mm, rot_deg):
-        """Internal: pick face(s) and place. Called with window hidden."""
-        # ── Pick one or more faces ─────────────────────────────────────────
         try:
             refs = uidoc.Selection.PickObjects(
                 ObjectType.Face,
@@ -564,10 +648,9 @@ class DowelPlacerWindow(object):
                 "Select one or more wall faces to place dowels"
             )
         except Exception:
-            # User cancelled
             self.txtEstimatedCount.Text = "Pick cancelled"
             return
-        
+
         if not refs or len(refs) == 0:
             self.txtEstimatedCount.Text = "Pick cancelled"
             return
@@ -577,24 +660,19 @@ class DowelPlacerWindow(object):
         faces_with_no_positions = 0
         invalid_faces = 0
 
-        # ── Resolve geometry and calculate positions per face ─────────────
         for ref in refs:
-            wall = doc.GetElement(ref.ElementId)
+            wall    = doc.GetElement(ref.ElementId)
             geo_obj = wall.GetGeometryObjectFromReference(ref)
-
             if not isinstance(geo_obj, Face):
                 invalid_faces += 1
                 continue
-
-            face = geo_obj
+            face      = geo_obj
             positions = calculate_dowel_positions(
                 face, wall, left_mm, right_mm, spacing_mm, v_off_mm
             )
-
             if not positions:
                 faces_with_no_positions += 1
                 continue
-
             face_items.append((face, ref, wall, positions))
             total_positions += len(positions)
 
@@ -610,27 +688,29 @@ class DowelPlacerWindow(object):
 
         self.txtEstimatedCount.Text = "{} dowels will be placed".format(total_positions)
 
-        # ── Confirm ────────────────────────────────────────────────────────
+        # Confirm dialog
+        vis_info = ("Position {}".format(self.active_position)
+                    if self.active_position else "None")
         msg = (
             "Place {} dowels on {} face(s)?\n\n"
-            "Family : {}\n"
-            "Type   : {}\n\n"
+            "Family        : {}\n"
+            "Type          : {}\n\n"
             "Left Offset   : {} mm\n"
             "Right Offset  : {} mm\n"
             "Spacing       : {} mm\n"
-            "Height        : {} mm"
+            "Height        : {} mm\n"
+            "Visibility    : {}"
         ).format(
             total_positions, len(face_items),
             self.selected_family.Name,
             Element.Name.GetValue(self.selected_symbol),
             int(left_mm), int(right_mm),
-            int(spacing_mm), int(v_off_mm)
+            int(spacing_mm), int(v_off_mm),
+            vis_info
         )
         if faces_with_no_positions > 0 or invalid_faces > 0:
-            msg += (
-                "\n\nSkipped: {} face(s) with no valid positions, {} invalid face(s)"
-                .format(faces_with_no_positions, invalid_faces)
-            )
+            msg += "\n\nSkipped: {} face(s) with no valid positions, {} invalid face(s)".format(
+                faces_with_no_positions, invalid_faces)
 
         result = TaskDialog.Show(
             "Confirm Placement", msg,
@@ -644,15 +724,21 @@ class DowelPlacerWindow(object):
         placed_list = []
         failed_list = []
 
-        # Gather Model Properties parameters
         model_props = {
-            "dowel_offset": safe_float(self.txtDowelOffset.Text if self.txtDowelOffset else "", 100.0),
-            "gap_top": safe_float(self.txtGapTop.Text if self.txtGapTop else "", 100.0),
-            "cp_joint_distance": safe_float(self.txtCPJointDistance.Text if self.txtCPJointDistance else "", 150.0),
-            "embedded_depth": safe_float(self.txtEmbeddedBarDepth.Text if self.txtEmbeddedBarDepth else "", 800.0),
-            "embedded_x": safe_float(self.txtEmbeddedDepthX.Text if self.txtEmbeddedDepthX else "", 500.0),
-            "embedded_y": safe_float(self.txtEmbeddedDepthY.Text if self.txtEmbeddedDepthY else "", 300.0),
+            "dowel_offset":      safe_float(self.txtDowelOffset.Text if self.txtDowelOffset else "", 80.0),
+            "gap_top":           safe_float(self.txtGapTop.Text if self.txtGapTop else "", 20.0),
+            "cp_joint_distance": safe_float(self.txtCPJointDistance.Text if self.txtCPJointDistance else "", 16.0),
+            "embedded_depth":    safe_float(self.txtEmbeddedBarDepth.Text if self.txtEmbeddedBarDepth else "", 800.0),
+            "embedded_x":        safe_float(self.txtEmbeddedDepthX.Text if self.txtEmbeddedDepthX else "", 800.0),
+            "embedded_y":        safe_float(self.txtEmbeddedDepthY.Text if self.txtEmbeddedDepthY else "", 300.0),
         }
+
+        # Build visibility map: ONLY the active position = 1, all others = 0.
+        # If nothing selected, all stay 0 (unchanged from family defaults).
+        visibility_props = {}
+        for pos_name in self.POSITION_NAMES:
+            letter = pos_name.split()[-1]  # "A", "B", "C", "D"
+            visibility_props[pos_name] = 1 if (self.active_position == letter) else 0
 
         with Transaction(doc, "Place Dowels on Wall Face") as t:
             t.Start()
@@ -666,6 +752,17 @@ class DowelPlacerWindow(object):
                         model_props,
                         v_off_mm
                     )
+                    # Apply visibility — only set if a position was selected
+                    if self.active_position:
+                        for instance in p_list:
+                            for param_name, int_val in visibility_props.items():
+                                try:
+                                    param = instance.LookupParameter(param_name)
+                                    if param and not param.IsReadOnly \
+                                            and param.StorageType == StorageType.Integer:
+                                        param.Set(int_val)
+                                except Exception:
+                                    pass
                     placed_list.extend(p_list)
                     failed_list.extend(f_list)
                 t.Commit()

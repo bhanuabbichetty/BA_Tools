@@ -18,6 +18,7 @@ Side fix:
 """
 
 import os
+import math
 import clr
 
 clr.AddReference("PresentationFramework")
@@ -167,6 +168,7 @@ class ConfigDialog(forms.WPFWindow):
         self.btnPlace.Click  += self._on_place
         self.btnCancel.Click += self._on_cancel
         self.btnClose.Click  += self._on_cancel
+        self.HeaderDrag.MouseLeftButtonDown += self._on_drag
 
         self._populate_walls()
         self._populate_families()
@@ -234,6 +236,12 @@ class ConfigDialog(forms.WPFWindow):
         self.result = "REPICK"
         self.Close()
 
+    def _on_drag(self, sender, args):
+        try:
+            self.DragMove()
+        except Exception:
+            pass
+
     # ── Status / summary ─────────────────────────────────────────────────────
     def _set_status(self, msg):
         self.txtStatus.Text = msg
@@ -252,7 +260,10 @@ class ConfigDialog(forms.WPFWindow):
             self.txtSumFace.Text   = face
             self.txtSumLevel.Text  = "{}".format(lvl)
             self.txtSumHeight.Text = "—" if h_mm is None else "{:.0f} mm".format(h_mm)
-            self.txtSumOffset.Text = "—" if e_mm is None else "{:+.0f} mm".format(e_mm)
+            self.txtSumOffset.Text = (
+                "—" if e_mm is None or h_mm is None else
+                "Top {:+.0f} / base {:+.0f} mm".format(e_mm, e_mm - h_mm)
+            )
             cuts = []
             if self.chkAutoCut.IsChecked:
                 cuts.append("Auto-cut")
@@ -269,11 +280,13 @@ class ConfigDialog(forms.WPFWindow):
             elif self.cmbLevel.SelectedIndex < 0:
                 self._set_status("Select a schedule level.")
                 self.btnPlace.IsEnabled = False
-            elif h_mm is None or e_mm is None:
-                self._set_status("Height and offset must be numeric (mm).")
+            elif (h_mm is None or e_mm is None or
+                  math.isnan(h_mm) or math.isinf(h_mm) or h_mm <= 0 or
+                  math.isnan(e_mm) or math.isinf(e_mm)):
+                self._set_status("Enter a positive height and a finite top offset (mm).")
                 self.btnPlace.IsEnabled = False
             else:
-                self._set_status("Ready  ·  void will be placed inside the wall body.")
+                self._set_status("Ready  ·  void top is anchored at the selected level and extends downward.")
                 self.btnPlace.IsEnabled = True
         except Exception:
             pass
@@ -291,10 +304,10 @@ class ConfigDialog(forms.WPFWindow):
 
         height_mm = safe_float(self.txtHeight.Text)
         elev_mm   = safe_float(self.txtElevation.Text)
-        if height_mm is None:
-            self._set_status("Height must be a number (mm)."); return
-        if elev_mm is None:
-            self._set_status("Elevation offset must be a number (mm)."); return
+        if height_mm is None or math.isnan(height_mm) or math.isinf(height_mm) or height_mm <= 0:
+            self._set_status("Height must be a finite positive number (mm)."); return
+        if elev_mm is None or math.isnan(elev_mm) or math.isinf(elev_mm):
+            self._set_status("Top offset must be a finite number (mm)."); return
 
         sym_id = self._type_map.get(self.cmbType.SelectedItem)
         if sym_id is None:
@@ -347,15 +360,34 @@ def set_level(inst, level_id):
 
 
 def set_elevation(inst, mm):
-    for bip in (BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM,
-                BuiltInParameter.INSTANCE_ELEVATION_PARAM):
-        try:
-            p = inst.get_Parameter(bip)
-            if p and not p.IsReadOnly and p.StorageType == StorageType.Double:
-                p.Set(to_ft(mm)); return True
-        except Exception:
-            continue
+    try:
+        p = inst.get_Parameter(BuiltInParameter.INSTANCE_ELEVATION_PARAM)
+        if p and not p.IsReadOnly and p.StorageType == StorageType.Double:
+            p.Set(to_ft(mm))
+            return True
+    except Exception:
+        logger.exception("Could not set the void elevation parameter.")
     return False
+
+
+def align_instance_z(inst, target_z):
+    """Correct any host/level offset side effect and verify the final world Z."""
+    location = inst.Location
+    if hasattr(location, "Point"):
+        current_z = location.Point.Z
+    else:
+        current_z = inst.GetTransform().Origin.Z
+    delta = target_z - current_z
+    if abs(delta) > to_ft(0.5):
+        ElementTransformUtils.MoveElement(doc, inst.Id, XYZ(0, 0, delta))
+        doc.Regenerate()
+    location = inst.Location
+    if hasattr(location, "Point"):
+        current_z = location.Point.Z
+    else:
+        current_z = inst.GetTransform().Origin.Z
+    if abs(target_z - current_z) > to_ft(1.0):
+        raise Exception("Could not place the void at its calculated top-down elevation.")
 
 
 def match_workset(wall, inst):
@@ -653,6 +685,77 @@ def correct_void_side(inst, face):
 # ══════════════════════════════════════════════════════════════════════════════
 #  Main placement
 # ══════════════════════════════════════════════════════════════════════════════
+def _geom_points(inst):
+    """World-space points describing the real void geometry (edge tessellation).
+
+    Falls back to the corners of the instance bounding box.
+    """
+    pts = []
+    for s in _iter_solids(inst):
+        try:
+            for e in s.Edges:
+                for p in e.Tessellate():
+                    pts.append(p)
+        except Exception:
+            continue
+    if not pts:
+        try:
+            bb = inst.get_BoundingBox(None)
+        except Exception:
+            bb = None
+        if bb is not None:
+            for x in (bb.Min.X, bb.Max.X):
+                for y in (bb.Min.Y, bb.Max.Y):
+                    for z in (bb.Min.Z, bb.Max.Z):
+                        pts.append(XYZ(x, y, z))
+    return pts
+
+
+def align_void_to_wall(inst, wall, top_z):
+    """Position the void from its ACTUAL geometry, not from the family origin.
+
+    Families differ in where their origin sits (bottom / top / start / centre) and
+    in which way they extrude, which is why some voids landed correctly and
+    others came out reversed.  Here we measure the real geometry and move the
+    instance (in the wall plane only) so that:
+        * the TOP of the void is exactly at ``top_z``  (level + top offset)
+        * the void is centred along the wall length
+    Height then extends downward from the top.
+    """
+    curve = wall.Location.Curve
+    p0 = curve.GetEndPoint(0)
+    p1 = curve.GetEndPoint(1)
+    use_along = hasattr(curve, "Direction")        # straight walls only
+    wall_vec = XYZ(p1.X - p0.X, p1.Y - p0.Y, 0.0)
+    if wall_vec.GetLength() < 1e-9:
+        use_along = False
+    else:
+        wall_vec = wall_vec.Normalize()
+    mid = (p0 + p1) * 0.5
+
+    for _ in range(3):
+        doc.Regenerate()
+        pts = _geom_points(inst)
+        if not pts:
+            raise Exception("Could not read void geometry for alignment.")
+        z_max = max(p.Z for p in pts)
+        dz = top_z - z_max
+        if use_along:
+            along = [(p - mid).DotProduct(wall_vec) for p in pts]
+            a_ctr = (min(along) + max(along)) * 0.5
+            shift = XYZ(-wall_vec.X * a_ctr, -wall_vec.Y * a_ctr, dz)
+        else:
+            shift = XYZ(0, 0, dz)
+        if shift.GetLength() <= to_ft(0.5):
+            break
+        ElementTransformUtils.MoveElement(doc, inst.Id, shift)
+
+    doc.Regenerate()
+    pts = _geom_points(inst)
+    if not pts or abs(max(p.Z for p in pts) - top_z) > to_ft(2.0):
+        raise Exception("Could not anchor the void top at the selected level.")
+
+
 def run_placement(walls, cfg, levels):
     symbol = doc.GetElement(ElementId(int(cfg["sym_id"])))
     if symbol is None:
@@ -684,7 +787,9 @@ def run_placement(walls, cfg, levels):
                 if face is None:
                     raise Exception("Could not retrieve wall face.")
 
-                target_z = level.Elevation + to_ft(cfg["elev_mm"])
+                top_z = level.Elevation + to_ft(cfg["elev_mm"])
+                bottom_offset_mm = cfg["elev_mm"] - cfg["height_mm"]
+                target_z = top_z - to_ft(cfg["height_mm"])
                 origin, ref_dir = face_origin_and_dir(
                     face, wall, target_z, use_exterior=cfg["use_exterior"]
                 )
@@ -694,13 +799,18 @@ def run_placement(walls, cfg, levels):
                     raise Exception("NewFamilyInstance returned None.")
 
                 set_level(inst, level.Id)
-                set_elevation(inst, cfg["elev_mm"])
+                set_elevation(inst, bottom_offset_mm)
                 set_mm_param(find_param(inst, ["Height", "H", "Void Height"]), cfg["height_mm"])
                 set_mm_param(find_param(inst, ["Length", "L", "Void Length"]), length_mm)
+                doc.Regenerate()
 
                 # correct_void_side: detects air-side placement and corrects with
                 # FlipFacing → FlipHand → geometry mirror (in that priority).
                 side_action = correct_void_side(inst, face)
+
+                # Flips can move the geometry, so anchor top-down AFTER them,
+                # measuring the real geometry (independent of family origin).
+                align_void_to_wall(inst, wall, top_z)
 
                 if cfg["match_ws"]:
                     match_workset(wall, inst)

@@ -1,7 +1,29 @@
-title: Place Void
-tooltip: >
-  Select wall(s), choose a loaded face-based void family and type, then
-  set the opening height and level offset. The tool places face-hosted
-  instances on the selected walls and attempts to cut each wall.
+title: "Place Void"
+tooltip: |
+  Version = 1.0
+  Date    = 26.04.2026
+  __________________________________
+  Description:
+
+  Place NCP-Void instances on selected walls
+  with a modern UI workflow.
+
+  - Prompts for walls and allows the selection to be refreshed from the dialog.
+  - Void Length is set from each wall length.
+  - Height and top offset come from UI input.
+  - The void is anchored from the selected top level and extends downward by the entered height.
+  - The top offset is measured from the selected level; the bottom elevation is calculated from height.
+  - Tries to orient instance toward wall interior.
+  __________________________________
+  How-to:
+
+  -> Select wall(s) in Revit.
+  -> Click Place Void button.
+  -> Set Height and top offset from the selected level.
+  -> Click PLACE VOID ON WALLS.
+  __________________________________
+  Last update:
+  - [26.04.2026] - 1.0 RELEASE
+
 author: Bhanu Prakash A
 context: doc-project

@@ -1,0 +1,6 @@
+title: Grids from Link
+tooltip: Place named grids from a selected CAD or Revit link, with duplicate checks.
+author: Bhanu
+context: doc-project
+engine:
+  clean: true

@@ -1,0 +1,144 @@
+<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Sheets Created  -  BA Tools"
+    Width="560" Height="520"
+    WindowStartupLocation="CenterScreen"
+    WindowStyle="None"
+    AllowsTransparency="True"
+    ResizeMode="NoResize"
+    Background="Transparent"
+    Foreground="#DCDCEC"
+    FontFamily="Segoe UI">
+
+    <Window.Resources>
+
+        <Style x:Key="GhostBtn" TargetType="Button">
+            <Setter Property="Foreground"      Value="#DCDCEC"/>
+            <Setter Property="Background"      Value="#101018"/>
+            <Setter Property="BorderBrush"     Value="#35435C"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize"        Value="12"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="4"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background"  Value="#1E2433"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#1976D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="BAThumb" TargetType="Thumb">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border Background="#35435C" CornerRadius="4" Width="{TemplateBinding Width}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#101018"/>
+            <Setter Property="Width"      Value="10"/>
+            <Setter Property="Margin"     Value="2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}" CornerRadius="4"/>
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource BAThumb}"/>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="12" BorderThickness="1" BorderBrush="#1976D2" Background="#0A0A12">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="34"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+
+            <!-- HEADER -->
+            <Border Grid.Row="0" Background="#0A0A12"
+                    BorderBrush="#1976D2" BorderThickness="0,0,0,1"
+                    CornerRadius="12,12,0,0"
+                    MouseDown="UIe_header_drag">
+                <Grid Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Width="40" Height="40" CornerRadius="8"
+                            Background="#1976D2" VerticalAlignment="Center">
+                        <TextBlock Text="BA" Foreground="White" FontWeight="Bold" FontSize="17"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <TextBlock Grid.Column="1" Text="SHEETS CREATED"
+                               Foreground="#F5F6FA" FontWeight="Bold" FontSize="17"
+                               Margin="16,0,0,0" VerticalAlignment="Center"/>
+
+                    <Button Grid.Column="2" Content="Close"
+                            Style="{StaticResource GhostBtn}"
+                            Width="80" Height="32"
+                            Click="button_close"
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- SUBTITLE BAND -->
+            <Border Grid.Row="1" BorderBrush="#1976D2" BorderThickness="0,0,0,1">
+                <TextBlock Text="Click a row to open that sheet"
+                           Foreground="#F2B77C" FontSize="11"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- LIST -->
+            <Border Grid.Row="2" Margin="16,12,16,10" CornerRadius="8"
+                    BorderBrush="#1976D2" BorderThickness="1" Background="#0A0A12">
+                <ScrollViewer Margin="6" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="UI_main_stack"/>
+                </ScrollViewer>
+            </Border>
+
+            <!-- FOOTER -->
+            <Border Grid.Row="3" BorderBrush="#1976D2" BorderThickness="0,1,0,0"
+                    CornerRadius="0,0,12,12">
+                <Grid Margin="18,0">
+                    <TextBlock x:Name="UI_status_count" Text=""
+                               Foreground="#59BAFF" FontSize="11"
+                               VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <Button Content="CLOSE" Style="{StaticResource GhostBtn}"
+                            Width="110" Height="34"
+                            HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Click="button_close"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

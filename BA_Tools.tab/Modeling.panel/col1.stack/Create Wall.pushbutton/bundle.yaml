@@ -1,0 +1,6 @@
+title: Walls from CAD
+tooltip: Create constrained walls from a selected CAD layer in one BA Tools window.
+author: Bhanu
+context: doc-project
+engine:
+  clean: true
